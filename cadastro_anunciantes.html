@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anuncie seu Negócio - Sua Viagem Aqui</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Inter', sans-serif; }
+.glass-effect {
+background: rgba(17, 24, 39, 0.7);
+backdrop-filter: blur(12px);
+border: 1px solid rgba(255, 255, 255, 0.1);
+}
+</style>
+</head>
+<body class="bg-slate-900">
+<div class="min-h-screen flex items-center justify-center bg-cover p-4" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop');">
+<div class="absolute inset-0 bg-black/60"></div>
+<div class="relative w-full max-w-2xl p-8 space-y-8 glass-effect rounded-2xl shadow-2xl">
+<div>
+<a href="index.html" class="flex items-center justify-center group mb-6">
+<svg class="h-10 w-10 mr-3 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 3a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" />
+<circle cx="12" cy="10" r="3"/>
+</svg>
+<span class="text-2xl font-bold text-white">Sua Viagem <span class="text-amber-400">Aqui</span></span>
+</a>
+<h2 class="text-center text-3xl font-extrabold text-white">
+Cadastre seu negócio
+</h2>
+<p class="mt-2 text-center text-md text-slate-300">
+Preencha o formulário para se tornar nosso parceiro.
+</p>
+</div>
+<form id="partner-form" class="mt-8 space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Nome do Negócio -->
+<div>
+<label for="name" class="block text-sm font-medium text-slate-200">Nome do Negócio</label>
+<input id="name" name="name" type="text" required class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm" placeholder="Ex: Pousada Aconchego">
+</div>
+<!-- Contato -->
+<div>
+<label for="contact" class="block text-sm font-medium text-slate-200">Contato (Email ou Telefone)</label>
+<input id="contact" name="contact" type="text" required class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm" placeholder="contato@email.com">
+</div>
+<!-- Categoria -->
+<div>
+<label for="category" class="block text-sm font-medium text-slate-200">Categoria</label>
+<select id="category" name="category" class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
+<option value="agencias">Agências de Viagens</option>
+<option value="camping">Camping</option>
+<option value="guias">Guias de Turismo</option>
+<option value="hospedagem">Hotéis e Pousadas</option>
+<option value="restaurantes">Restaurantes</option>
+</select>
+</div>
+<!-- Cidade -->
+<div>
+<label for="city" class="block text-sm font-medium text-slate-200">Cidade</label>
+<select id="city" name="city" class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
+<option value="rio">Rio de Janeiro</option>
+<option value="salvador">Salvador</option>
+<option value="gramado">Gramado</option>
+<option value="fortaleza">Fortaleza</option>
+</select>
+</div>
+<!-- URL da Imagem -->
+<div class="md:col-span-2">
+<label for="image" class="block text-sm font-medium text-slate-200">URL da Imagem Principal</label>
+<input id="image" name="image" type="url" required class="mt-1 block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm" placeholder="https://exemplo.com/imagem.jpg">
+</div>
+</div>
+
+<!-- Mensagem de sucesso/erro -->
+<div id="form-message" class="hidden text-center p-3 rounded-md"></div>
+
+<div>
+<button type="submit" id="submit-btn" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-slate-900 bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors">
+<span id="submit-text">Enviar Cadastro</span>
+<span id="submit-loading" class="hidden">Enviando...</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyD9NtZa51yCmigqGMXtOAtxSVhcP2gh1CM",
+authDomain: "sua-viagem-aqui-df2df.firebaseapp.com",
+projectId: "sua-viagem-aqui-df2df",
+storageBucket: "sua-viagem-aqui-df2df.appspot.com",
+messagingSenderId: "803751844379",
+appId: "1:803751844379:web:34b6f75343563d5be2f6be",
+measurementId: "G-JBT22E5ZZN"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const partnerForm = document.getElementById('partner-form');
+const formMessage = document.getElementById('form-message');
+const submitBtn = document.getElementById('submit-btn');
+const submitText = document.getElementById('submit-text');
+const submitLoading = document.getElementById('submit-loading');
+
+partnerForm.addEventListener('submit', async (e) => {
+e.preventDefault();
+
+submitText.classList.add('hidden');
+submitLoading.classList.remove('hidden');
+submitBtn.disabled = true;
+
+const newPartner = {
+name: partnerForm.name.value,
+contact: partnerForm.contact.value,
+category: partnerForm.category.value,
+city: partnerForm.city.value,
+image: partnerForm.image.value,
+};
+
+try {
+const docRef = await addDoc(collection(db, "partners"), newPartner);
+console.log("Documento escrito com ID: ", docRef.id);
+formMessage.textContent = 'Cadastro enviado com sucesso! Obrigado por se juntar a nós.';
+formMessage.className = 'p-3 rounded-md bg-green-500/20 border border-green-500 text-green-300';
+formMessage.classList.remove('hidden');
+partnerForm.reset(); // Limpa o formulário
+
+} catch (error) {
+console.error("Erro ao adicionar documento: ", error);
+formMessage.textContent = 'Ocorreu um erro ao enviar seu cadastro. Tente novamente.';
+formMessage.className = 'p-3 rounded-md bg-red-500/20 border border-red-500 text-red-300';
+formMessage.classList.remove('hidden');
+} finally {
+submitText.classList.remove('hidden');
+submitLoading.classList.add('hidden');
+submitBtn.disabled = false;
+}
+});
+</script>
+</body>
+</html>
+

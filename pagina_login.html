@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Sua Viagem Aqui</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Inter', sans-serif; }
+.glass-effect {
+background: rgba(17, 24, 39, 0.6);
+backdrop-filter: blur(12px);
+border: 1px solid rgba(255, 255, 255, 0.1);
+}
+</style>
+</head>
+<body class="bg-slate-900">
+<div class="min-h-screen flex items-center justify-center bg-cover" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723a9ce6890?q=80&w=2070&auto=format&fit=crop');">
+<div class="absolute inset-0 bg-black/50"></div>
+<div class="relative w-full max-w-md p-8 space-y-8 glass-effect rounded-2xl shadow-2xl">
+<div>
+<a href="index.html" class="flex items-center justify-center group mb-6">
+<svg class="h-10 w-10 mr-3 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 3a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" />
+<circle cx="12" cy="10" r="3"/>
+</svg>
+<span class="text-2xl font-bold text-white">Sua Viagem <span class="text-amber-400">Aqui</span></span>
+</a>
+<h2 class="text-center text-3xl font-extrabold text-white">
+Acesse sua conta
+</h2>
+</div>
+<form id="login-form" class="mt-8 space-y-6">
+<div class="rounded-md shadow-sm -space-y-px">
+<div>
+<label for="email-address" class="sr-only">Email</label>
+<input id="email-address" name="email" type="email" autocomplete="email" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm rounded-t-md" placeholder="Endereço de email">
+</div>
+<div>
+<label for="password" class="sr-only">Senha</label>
+<input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-slate-600 bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm rounded-b-md" placeholder="Senha">
+</div>
+</div>
+
+<div class="flex items-center justify-between">
+<div class="text-sm">
+<a href="#" class="font-medium text-amber-400 hover:text-amber-300">
+Esqueceu sua senha?
+</a>
+</div>
+</div>
+
+<!-- Mensagem de erro -->
+<div id="error-message" class="hidden text-center p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-md"></div>
+
+<div>
+<button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-slate-900 bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors">
+Entrar
+</button>
+</div>
+</form>
+<p class="mt-2 text-center text-sm text-slate-300">
+Não tem uma conta?
+<a href="#" class="font-medium text-amber-400 hover:text-amber-300">
+Crie uma agora
+</a>
+</p>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyD9NtZa51yCmigqGMXtOAtxSVhcP2gh1CM",
+authDomain: "sua-viagem-aqui-df2df.firebaseapp.com",
+projectId: "sua-viagem-aqui-df2df",
+storageBucket: "sua-viagem-aqui-df2df.appspot.com",
+messagingSenderId: "803751844379",
+appId: "1:803751844379:web:34b6f75343563d5be2f6be",
+measurementId: "G-JBT22E5ZZN"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const loginForm = document.getElementById('login-form');
+const errorMessageDiv = document.getElementById('error-message');
+
+loginForm.addEventListener('submit', (e) => {
+e.preventDefault();
+const email = loginForm['email-address'].value;
+const password = loginForm['password'].value;
+
+signInWithEmailAndPassword(auth, email, password)
+.then((userCredential) => {
+// Login bem-sucedido
+console.log('Login com sucesso!', userCredential.user);
+// Redireciona para a página principal após o login
+window.location.href = 'index.html';
+})
+.catch((error) => {
+// Trata os erros de login
+console.error('Erro no login:', error.code);
+errorMessageDiv.classList.remove('hidden');
+switch (error.code) {
+case 'auth/invalid-email':
+errorMessageDiv.textContent = 'O formato do email é inválido.';
+break;
+case 'auth/user-not-found':
+case 'auth/wrong-password':
+case 'auth/invalid-credential':
+errorMessageDiv.textContent = 'Email ou senha incorretos.';
+break;
+default:
+errorMessageDiv.textContent = 'Ocorreu um erro ao tentar fazer login.';
+}
+});
+});
+</script>
+</body>
+</html>
+
+
