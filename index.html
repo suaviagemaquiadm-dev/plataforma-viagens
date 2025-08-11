@@ -5,32 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sua Viagem Aqui</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- SCRIPT DE DIAGNÓSTICO -->
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const isStyled = window.getComputedStyle(document.body).fontFamily.includes('Inter');
-                if (!isStyled) {
-                    const warningDiv = document.createElement('div');
-                    warningDiv.style.position = 'fixed';
-                    warningDiv.style.top = '0';
-                    warningDiv.style.left = '0';
-                    warningDiv.style.right = '0';
-                    warningDiv.style.padding = '16px';
-                    warningDiv.style.backgroundColor = '#fcd34d';
-                    warningDiv.style.color = '#111827';
-                    warningDiv.style.textAlign = 'center';
-                    warningDiv.style.zIndex = '10000';
-                    warningDiv.style.fontSize = '16px';
-                    warningDiv.style.fontFamily = 'sans-serif';
-                    warningDiv.innerHTML = '<b>Atenção: O estilo da página não carregou.</b><br>Por favor, verifique se está ligado à internet e se guardou o ficheiro corretamente como "index.html" (com o tipo "Todos os ficheiros").';
-                    document.body.prepend(warningDiv);
-                }
-            }, 500);
-        });
-    </script>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -280,9 +254,18 @@
             <p class="text-slate-400 mt-2">Tente ajustar os seus filtros de busca.</p>
         </div>
     </section>
-
+    
     <!-- Main Content -->
     <main id="main-content" class="container mx-auto px-4 py-16">
+
+        <!-- NOVA SECÇÃO: Previsão do Tempo -->
+        <section id="weather-section" class="mb-20">
+            <div id="weather-widget" class="max-w-lg mx-auto glass-effect rounded-2xl p-6 shadow-lg">
+                <!-- Conteúdo será preenchido pelo JavaScript -->
+                <div class="text-center text-slate-400 w-full">Carregando previsão do tempo...</div>
+            </div>
+        </section>
+
         <!-- Seção Como Funciona -->
         <section id="como-funciona" class="mb-20">
             <div class="text-center mb-12">
@@ -475,7 +458,7 @@
                     </div>
                     <div class="text-center">
                         <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e-879e-113?q=80&w=400&auto=format&fit=crop"
+                            <img src="https://images.unsplash.com/photo-1611162B17474-5b21e-879e-113?q=80&w=400&auto=format&fit=crop"
                                   class="w-full max-w-sm mx-auto rounded-2xl shadow-xl float-animation" alt="Representação visual de IA">
                             <div class="absolute -top-4 -right-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
                                 IA Ativa
@@ -574,14 +557,14 @@
     <script type="module">
         // Importa as funções que precisamos das bibliotecas do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // O SEU CÓDIGO DE LIGAÇÃO QUE VOCÊ COPIOU DO SITE DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyD9NtZa51yCmigqGMXtOAtxSVhcP2gh1CM",
             authDomain: "sua-viagem-aqui-df2df.firebaseapp.com",
             projectId: "sua-viagem-aqui-df2df",
-            storageBucket: "sua-viagem-aqui-df2df.firebasestorage.app",
+            storageBucket: "sua-viagem-aqui-df2df.appspot.com",
             messagingSenderId: "803751844379",
             appId: "1:803751844379:web:34b6f75343563d5be2f6be",
             measurementId: "G-JBT22E5ZZN"
@@ -609,8 +592,11 @@
             document.getElementById('search-loading').classList.add('flex');
 
             try {
-                // AQUI É A MAGIA: Estamos a pedir ao Firebase para nos dar todos os documentos da coleção "partners"
-                const querySnapshot = await getDocs(collection(db, "partners"));
+                const partnersRef = collection(db, "partners");
+                // *** ALTERAÇÃO IMPORTANTE: Agora só buscamos parceiros com status "aprovado" ***
+                const q = query(partnersRef, where("status", "==", "aprovado"));
+                
+                const querySnapshot = await getDocs(q);
                 const allPartners = [];
                 querySnapshot.forEach((doc) => {
                     allPartners.push({ id: doc.id, ...doc.data() });
@@ -675,6 +661,85 @@
         });
 
         // --- FIM DA LÓGICA COM FIREBASE REAL ---
+
+        // --- INÍCIO DA LÓGICA DA PREVISÃO DO TEMPO ---
+        const weatherWidget = document.getElementById('weather-widget');
+        const apiKey = '86e431b64946e1fa4186125cb6a054ef';
+        const city = 'Rio de Janeiro'; 
+
+        async function fetchWeather() {
+            // *** ALTERAÇÃO: URL para a API de previsão de 5 dias ***
+            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Não foi possível obter a previsão do tempo.');
+                
+                const data = await response.json();
+                
+                // Filtra a lista para obter a previsão do meio-dia para os próximos dias
+                const dailyForecasts = data.list.filter(item => item.dt_txt.includes("12:00:00"));
+
+                // Pega os dados de hoje (o primeiro da lista)
+                const today = dailyForecasts[0];
+                const todayIcon = getWeatherIcon(today.weather[0].id);
+                const todayTemp = Math.round(today.main.temp);
+                const todayDesc = today.weather[0].description;
+
+                let forecastHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <p class="text-lg font-semibold text-white">${data.city.name}</p>
+                            <p class="text-sm text-slate-300">Hoje</p>
+                        </div>
+                        <div class="text-right">
+                            <i class="fas ${todayIcon} text-4xl text-amber-400"></i>
+                            <p class="text-3xl font-bold text-white">${todayTemp}°C</p>
+                        </div>
+                    </div>
+                    <div class="border-l border-slate-600 pl-4 flex space-x-4">
+                `;
+
+                // Pega os dados para os próximos 2 dias
+                for (let i = 1; i < 3 && i < dailyForecasts.length; i++) {
+                    const day = dailyForecasts[i];
+                    const dayName = new Date(day.dt * 1000).toLocaleDateString('pt-BR', { weekday: 'short' });
+                    const dayIcon = getWeatherIcon(day.weather[0].id);
+                    const dayTemp = Math.round(day.main.temp);
+
+                    forecastHTML += `
+                        <div class="text-center">
+                            <p class="font-semibold text-white">${dayName}</p>
+                            <i class="fas ${dayIcon} text-2xl text-slate-300 my-1"></i>
+                            <p class="font-bold text-white">${dayTemp}°</p>
+                        </div>
+                    `;
+                }
+
+                forecastHTML += `</div>`;
+                weatherWidget.innerHTML = forecastHTML;
+
+            } catch (error) {
+                console.error("Erro ao buscar previsão do tempo:", error);
+                weatherWidget.innerHTML = `<div class="text-center text-slate-400 w-full">Não foi possível carregar a previsão do tempo.</div>`;
+            }
+        }
+        
+        function getWeatherIcon(weatherId) {
+            if (weatherId >= 200 && weatherId < 300) return 'fa-bolt'; // Tempestade
+            if (weatherId >= 300 && weatherId < 400) return 'fa-cloud-rain'; // Chuvisco
+            if (weatherId >= 500 && weatherId < 600) return 'fa-cloud-showers-heavy'; // Chuva
+            if (weatherId >= 600 && weatherId < 700) return 'fa-snowflake'; // Neve
+            if (weatherId >= 700 && weatherId < 800) return 'fa-smog'; // Névoa/Fumaça
+            if (weatherId === 800) return 'fa-sun'; // Céu limpo
+            if (weatherId === 801) return 'fa-cloud-sun'; // Poucas nuvens
+            if (weatherId > 801) return 'fa-cloud'; // Nublado
+            return 'fa-question-circle'; // Padrão
+        }
+
+        fetchWeather();
+
+        // --- FIM DA LÓGICA DA PREVISÃO DO TEMPO ---
 
         // O resto do seu código JavaScript para os carrosséis, etc.
         // --- Dados dos Carrosséis ---
@@ -896,7 +961,7 @@
                     }
                 }, 30);
             }
-            function stopScrolling() {
+            function stopAutoScroll() {
                 clearInterval(scrollInterval);
             }
             partnersNextBtn.addEventListener('click', () => { 
@@ -992,3 +1057,4 @@
     </script>
 </body>
 </html>
+
