@@ -1,233 +1,98 @@
-/**
- * Import function triggers from their respective sub-packages:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-const {
-  onCall,
-  onRequest,
-} = require("firebase-functions/v2/https");
+// Importa as ferramentas necessárias
+const {onDocumentCreated} = require("firebase-functions/v2/firestore");
+const {onCall, onRequest} = require("firebase-functions/v2/https");
+const {initializeApp} = require("firebase-admin/app");
+const {setGlobalOptions} = require("firebase-functions/v2");
+const {defineSecret} = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
-const {
-  initializeApp
-} = require("firebase-admin/app");
-const {
-  getFirestore
-} = require("firebase-admin/firestore");
-const {
-  defineString
-} = require('firebase-functions/params');
-const {
-  getAuth
-} = require('firebase-admin/auth');
-const {
-  Twilio
-} = require('twilio');
+const twilio = require("twilio");
+const mercadopago = require("mercadopago");
 
-// Inicializa o Firebase Admin SDK
+// Inicializa a ligação segura com o nosso projeto
 initializeApp();
-const db = getFirestore();
-const adminAuth = getAuth();
+// Define a região para todos os robôs, para garantir consistência
+setGlobalOptions({ region: "us-central1", maxInstances: 10 });
+
+// --- SEGREDOS DO TWILIO (para o robô de notificações) ---
+const twilioAccountSid = defineSecret("TWILIO_ACCOUNT_SID");
+const twilioAuthToken = defineSecret("TWILIO_AUTH_TOKEN");
+const twilioWhatsappFrom = defineSecret("TWILIO_WHATSAPP_FROM");
+const adminWhatsappTo = defineSecret("ADMIN_WHATSAPP_TO");
+
+// --- SEGREDOS DO MERCADO PAGO (para o robô de pagamentos) ---
+const mpAccessToken = defineSecret("MP_ACCESS_TOKEN");
 
 
-// --- Definição de Segredos e Configurações ---
-// Para configurar, execute no terminal:
-// firebase functions:secrets:set MERCADO_PAGO_ACCESS_TOKEN
-// firebase functions:secrets:set TWILIO_ACCOUNT_SID
-// firebase functions:secrets:set TWILIO_AUTH_TOKEN
-const mercadoPagoAccessToken = defineString("MERCADO_PAGO_ACCESS_TOKEN");
-const twilioAccountSid = defineString("TWILIO_ACCOUNT_SID");
-const twilioAuthToken = defineString("TWILIO_AUTH_TOKEN");
+// --- ROBÔ 1: Notificar Novo Anúncio ---
+exports.notificarNovoAnuncio = onDocumentCreated({
+  document: "partners/{partnerId}",
+  secrets: [twilioAccountSid, twilioAuthToken, twilioWhatsappFrom, adminWhatsappTo]
+}, async (event) => {
+  const partnerData = event.data.data();
+  const nomeDoNegocio = partnerData.name;
+  const mensagem = `📢 Novo anúncio para aprovação!\n\n*Negócio:* ${nomeDoNegocio}\n\nPor favor, acesse o painel para aprovar.`;
+  const twilioClient = twilio(twilioAccountSid.value(), twilioAuthToken.value());
 
-// --- FUNÇÃO 1: Notificar Novo Anúncio via WhatsApp ---
-exports.notificarNovoAnuncio = onCall(async (request) => {
-  const {
-    nomeAnunciante,
-    email,
-    telefone
-  } = request.data;
-  logger.info(`Nova notificação de anúncio para: ${nomeAnunciante}`);
-
-  const client = new Twilio(twilioAccountSid.value(), twilioAuthToken.value());
-  const adminPhoneNumber = "whatsapp:+5512981329343"; // Seu número de WhatsApp (admin)
-  const twilioSandboxNumber = "whatsapp:+14155238886"; // Número do Sandbox do Twilio
-
-  const message = `🔔 *Novo Anunciante Cadastrado* 🔔\n\n*Nome:* ${nomeAnunciante}\n*Email:* ${email}\n*Telefone:* ${telefone}\n\nAcesse o painel de administrador para aprovar.`;
-
+  logger.info(`A tentar enviar notificação para ${adminWhatsappTo.value()}...`);
   try {
-    await client.messages.create({
-      body: message,
-      from: twilioSandboxNumber,
-      to: adminPhoneNumber,
+    await twilioClient.messages.create({
+      from: twilioWhatsappFrom.value(),
+      to: adminWhatsappTo.value(),
+      body: mensagem
     });
-    logger.info("Mensagem do WhatsApp enviada com sucesso!");
-    return {
-      success: true,
-      message: "Notificação enviada."
-    };
+    logger.info("Mensagem de WhatsApp enviada com sucesso!");
   } catch (error) {
-    logger.error("Erro ao enviar mensagem do WhatsApp:", error);
-    throw new onCall.HttpsError("internal", "Erro ao enviar notificação.");
+    logger.error("Erro ao enviar mensagem de WhatsApp:", error);
   }
+  return event.data.ref.set({ status: "aguardando_aprovacao" }, {merge: true});
 });
 
 
-// --- FUNÇÃO 2 (ATUALIZADA): Criar Preferência de Pagamento ---
+// --- ROBÔ 2: Criar Fatura de Pagamento (Gerente Financeiro) ---
 exports.criarPreferenciaDePagamento = onCall({
-  secrets: ["MERCADO_PAGO_ACCESS_TOKEN"]
+  secrets: [mpAccessToken]
 }, async (request) => {
-  if (!request.auth) {
-    throw new onCall.HttpsError("unauthenticated", "Você precisa estar autenticado.");
-  }
-
-  const {
-    title,
-    price,
-    userId,
-    plan
-  } = request.data;
-  logger.info(`Criando preferência para userId: ${userId}, plano: ${plan}`);
-
-  const siteUrl = "https://www.suaviagemaqui.com.br";
-  // IMPORTANTE: Este URL precisa ser o URL público da sua função de webhook.
-  // Você o obtém no painel do Firebase após o primeiro deploy da função.
-  const notification_url = "https://mercadopagowebhook-cg5v65japa-uc.a.run.app"; // Substitua por seu URL real
-
-  const body = {
-    items: [{
-      title: title,
-      quantity: 1,
-      unit_price: price,
-      currency_id: "BRL",
-    }, ],
+  mercadopago.configure({ access_token: mpAccessToken.value() });
+  const planData = request.data;
+  const preference = {
+    items: [
+      {
+        title: planData.title,
+        quantity: 1,
+        currency_id: 'BRL',
+        unit_price: planData.price
+      }
+    ],
     back_urls: {
-      success: `${siteUrl}/success.html`,
-      failure: `${siteUrl}/failure.html`,
-      pending: `${siteUrl}/pending.html`,
+        success: "https://suaviagemaquiadm-dev.github.io/plataforma-viagens/",
+        failure: "https://suaviagemaquiadm-dev.github.io/plataforma-viagens/",
+        pending: "https://suaviagemaquiadm-dev.github.io/plataforma-viagens/"
     },
-    auto_return: "approved",
-    external_reference: JSON.stringify({
-      userId: userId,
-      plan: plan,
-    }),
-    notification_url: notification_url,
+    auto_return: "approved"
   };
 
   try {
-    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${mercadoPagoAccessToken.value()}`,
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await response.json();
-    logger.info("Preferência criada:", data);
-    return {
-      preferenceId: data.id
-    };
+    logger.info("A criar preferência de pagamento...");
+    const response = await mercadopago.preferences.create(preference);
+    logger.info("Preferência criada com sucesso!");
+    return { preferenceId: response.body.id };
   } catch (error) {
     logger.error("Erro ao criar preferência no Mercado Pago:", error);
-    throw new onCall.HttpsError("internal", "Não foi possível criar a preferência de pagamento.");
+    throw new Error('Não foi possível criar a preferência de pagamento.');
   }
 });
 
-
-// --- FUNÇÃO 3 (NOVA): Webhook do Mercado Pago ---
+// --- ROBÔ 3: Receber Confirmação de Pagamento (Ouvinte/Webhook) ---
 exports.mercadoPagoWebhook = onRequest({
-  secrets: ["MERCADO_PAGO_ACCESS_TOKEN"]
-}, async (req, res) => {
-  logger.info("Webhook do Mercado Pago recebido!");
-  const topic = req.query.topic || req.body.topic;
-  const paymentId = req.query.id || req.body.data?.id;
+    secrets: [mpAccessToken]
+}, async (request, response) => {
+    logger.info("Notificação de pagamento recebida do Mercado Pago!");
+    
+    const notification = request.body;
+    logger.info("Dados da notificação:", JSON.stringify(notification, null, 2));
 
-  if (topic === "payment" && paymentId) {
-    logger.info(`Evento de pagamento recebido para o ID: ${paymentId}`);
-    try {
-      const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        headers: {
-          "Authorization": `Bearer ${mercadoPagoAccessToken.value()}`,
-        },
-      });
-      const payment = await paymentResponse.json();
+    // O próximo passo será programar a lógica para atualizar a base de dados aqui.
 
-      if (payment.status === "approved") {
-        logger.info("Pagamento APROVADO!");
-        const externalReference = JSON.parse(payment.external_reference);
-        const {
-          userId,
-          plan
-        } = externalReference;
-
-        if (!userId || !plan) {
-          throw new Error("external_reference inválida ou ausente.");
-        }
-
-        logger.info(`Atualizando parceiro. UserID: ${userId}, Plano: ${plan}`);
-        const partnerRef = db.collection("partners").doc(userId);
-        await partnerRef.update({
-          plan: plan,
-          status: "aprovado",
-          paymentStatus: "pago",
-          lastPaymentId: paymentId,
-          planUpdatedAt: new Date(),
-        });
-        logger.info(`Parceiro ${userId} atualizado com sucesso para o plano ${plan}!`);
-      }
-      res.status(200).send("Webhook recebido com sucesso.");
-    } catch (error) {
-      logger.error("Erro ao processar webhook:", error);
-      res.status(500).send("Erro interno ao processar webhook.");
-    }
-  } else {
-    res.status(200).send("Notificação não relevante.");
-  }
-});
-
-// --- FUNÇÃO 4 (NOVA): Gerar Roteiro com IA ---
-exports.gerarRoteiro = onCall(async (request) => {
-  const {
-    prompt
-  } = request.data;
-  if (!prompt) {
-    throw new onCall.HttpsError("invalid-argument", "O prompt não pode estar vazio.");
-  }
-
-  // AINDA A SER IMPLEMENTADO: A lógica para chamar a API do Gemini
-  // Por agora, retornamos um texto de exemplo.
-  logger.info(`Gerando roteiro para o prompt: ${prompt}`);
-  const mockResponse = `
-  ### Proposta de Roteiro Gerada por IA
-
-  **Baseado na sua descrição:** _${prompt}_
-
-  ---
-
-  #### **Dia 1-3: A Magia de Roma**
-  * **Hospedagem:** Hotel Boutique no charmoso bairro de Trastevere.
-  * **Atividades:**
-    * Tour privado pelo Coliseu e Fórum Romano para evitar filas.
-    * Aula de culinária para aprender a fazer pasta fresca.
-    * Jantar romântico com vista para o Panteão.
-
-  #### **Dia 4-6: A Arte de Florença**
-  * **Transporte:** Viagem cênica de trem de alta velocidade.
-  * **Atividades:**
-    * Visita guiada à Galeria Uffizi e à estátua de David de Michelangelo.
-    * Passeio de um dia pela região vinícola de Chianti com degustação.
-    * Jantar em um restaurante com estrela Michelin.
-
-  *Este é um roteiro de exemplo. Podemos personalizá-lo completamente!*
-  `;
-
-  return {
-    text: mockResponse
-  };
+    response.status(200).send("Notificação recebida.");
 });
 

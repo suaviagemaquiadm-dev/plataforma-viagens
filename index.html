@@ -7,103 +7,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- NOVO: Script do Mercado Pago -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <style>
         html { scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; background-color: #111827; color: #f9fafb; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes slideInUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(252, 211, 77, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(252, 211, 77, 0.5); }
-        }
-        @keyframes infinite-scroll {
-            from { transform: translateX(0); }
-            to { transform: translateX(-100%); }
-        }
-        .advertiser-card-image {
-            transition: opacity 0.5s ease-in-out;
-        }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(252, 211, 77, 0.3); } 50% { box-shadow: 0 0 40px rgba(252, 211, 77, 0.5); } }
+        @keyframes infinite-scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+        .advertiser-card-image { transition: opacity 0.5s ease-in-out; }
         .float-animation { animation: float 6s ease-in-out infinite; }
         .slide-in-up { animation: slideInUp 0.8s ease-out; }
         .pulse-glow { animation: pulse-glow 2s infinite; }
-        .scrolling-logos {
-            display: inline-flex;
-            animation: infinite-scroll 40s linear infinite;
-        }
-        .glass-effect {
-            background: rgba(17, 24, 39, 0.5);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .premium-card {
-            background: linear-gradient(145deg, #1f2937, #111827);
-            border: 1px solid #374151;
-            transition: all 0.3s ease;
-        }
-        .premium-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border-color: #fca5a5;
-        }
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-        }
-        .card-hover:hover img {
-            transform: scale(1.05);
-        }
-        .card-hover img {
-            transition: transform 0.3s ease;
-        }
-        .modern-spinner {
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid #fcd34d;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .text-gradient-gold {
-            background: linear-gradient(135deg, #fcd34d, #fbbf24, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        @media (max-width: 768px) {
-            .hero-title { font-size: 2.5rem; }
-            .hero-subtitle { font-size: 1.125rem; }
-        }
-        .btn-modern {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        .btn-modern::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-        .btn-modern:hover::before {
-            left: 100%;
-        }
+        .scrolling-logos { display: inline-flex; animation: infinite-scroll 40s linear infinite; }
+        .glass-effect { background: rgba(17, 24, 39, 0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .premium-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid #374151; transition: all 0.3s ease; }
+        .premium-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); border-color: #fca5a5; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+        .card-hover:hover img { transform: scale(1.05); }
+        .card-hover img { transition: transform 0.3s ease; }
+        .modern-spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fcd34d; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .text-gradient-gold { background: linear-gradient(135deg, #fcd34d, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        @media (max-width: 768px) { .hero-title { font-size: 2.5rem; } .hero-subtitle { font-size: 1.125rem; } }
+        .btn-modern { position: relative; overflow: hidden; transition: all 0.3s ease; }
+        .btn-modern::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); transition: left 0.5s; }
+        .btn-modern:hover::before { left: 100%; }
     </style>
 </head>
 <body class="bg-slate-900">
@@ -112,7 +43,7 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <!-- Logo -->
-                <a href="#" class="flex items-center group">
+                <a href="index.html" class="flex items-center group">
                     <div class="relative">
                         <svg class="h-10 w-10 mr-3 text-amber-400 transition-transform group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 3a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" />
@@ -191,7 +122,7 @@
                             <input type="date" id="data-input"
                                    class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white focus:bg-slate-700 focus:border-amber-400 transition-all">
                         </div>
-                        <!-- Categoria (antigo N. de Viajantes) -->
+                        <!-- Categoria -->
                         <div class="relative">
                             <label class="block text-white text-sm font-semibold mb-3">
                                 <i class="fas fa-tags mr-2"></i>Categoria
@@ -205,7 +136,7 @@
                                     <option value="restaurantes" class="text-gray-800">Restaurantes</option>
                             </select>
                         </div>
-                        <!-- Em qual cidade (antigo Tipo de Pacote) -->
+                        <!-- Cidade -->
                         <div class="relative">
                             <label class="block text-white text-sm font-semibold mb-3">
                                 <i class="fas fa-city mr-2"></i>Em qual cidade
@@ -237,7 +168,7 @@
         </div>
     </section>
 
-    <!-- NOVA SECÇÃO: Resultados da Busca (Inicialmente escondida) -->
+    <!-- Resultados da Busca -->
     <section id="search-results-section" class="hidden container mx-auto px-4 py-16">
         <div class="flex justify-between items-center mb-12">
             <h2 class="text-4xl font-bold text-white">Resultados da Busca</h2>
@@ -246,8 +177,7 @@
             </button>
         </div>
         <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <!-- Resultados da busca serão inseridos aqui pelo JS -->
-        </div>
+            </div>
         <div id="no-results-message" class="hidden text-center py-16">
             <i class="fas fa-exclamation-circle text-5xl text-amber-400 mb-4"></i>
             <h3 class="text-2xl font-bold text-white">Nenhum resultado encontrado</h3>
@@ -255,18 +185,17 @@
         </div>
     </section>
     
-    <!-- Main Content -->
+    <!-- Conteúdo Principal -->
     <main id="main-content" class="container mx-auto px-4 py-16">
 
-        <!-- NOVA SECÇÃO: Previsão do Tempo -->
+        <!-- Previsão do Tempo -->
         <section id="weather-section" class="mb-20">
             <div id="weather-widget" class="max-w-lg mx-auto glass-effect rounded-2xl p-6 shadow-lg">
-                <!-- Conteúdo será preenchido pelo JavaScript -->
                 <div class="text-center text-slate-400 w-full">Carregando previsão do tempo...</div>
             </div>
         </section>
 
-        <!-- Seção Como Funciona -->
+        <!-- Como Funciona -->
         <section id="como-funciona" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-white mb-4">Como Funciona</h2>
@@ -290,7 +219,8 @@
                 </div>
             </div>
         </section>
-        <!-- Seção Agências Premium -->
+        
+        <!-- Carrossel de Agências Premium -->
         <section id="agencias" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-white mb-4">Nossas Agências Premium</h2>
@@ -310,7 +240,8 @@
                 </button>
             </div>
         </section>
-        <!-- NOVO Carrossel de Parceiros Premium (TripAdvisor Style) -->
+
+        <!-- Carrossel de Parceiros Premium -->
         <section id="parceiros-premium" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-white mb-4">Explore Nossos Parceiros Premium</h2>
@@ -330,7 +261,8 @@
                 </button>
             </div>
         </section>
-        <!-- Seção Mais Agências para seu Passeio -->
+
+        <!-- Mais Parceiros -->
         <section id="mais-agencias" class="mb-20">
              <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-white mb-4">Mais Parceiros para seu Passeio</h2>
@@ -343,7 +275,8 @@
                 <p><strong>Aviso Importante:</strong> A plataforma Sua Viagem Aqui atua exclusivamente como uma vitrine para conectar viajantes a fornecedores de serviços. Toda a negociação, contratação, pagamento e execução dos pacotes e serviços são realizados diretamente com o parceiro anunciante, que é o único responsável pela transação.</p>
             </div>
         </section>
-        <!-- Seção Planos de Assinatura -->
+
+        <!-- Planos de Assinatura -->
         <section id="planos" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Planos de Assinatura para Parceiros</h2>
@@ -360,7 +293,7 @@
                         <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 5 fotos na galeria</li>
                         <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Visibilidade em buscas locais</li>
                     </ul>
-                    <button class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</button>
+                    <button id="subscribe-basic" class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</button>
                 </div>
                 <!-- Plano Plus -->
                 <div class="bg-slate-800 rounded-2xl p-8 border-2 border-amber-400 relative flex flex-col">
@@ -378,8 +311,7 @@
                         <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 20 fotos e 1 vídeo</li>
                         <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Link para site e redes sociais</li>
                     </ul>
-                    <button class="mt-8 w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-lg transition">Aproveite a Oferta</button>
-                    <button class="mt-4 w-full bg-transparent hover:bg-slate-700 text-amber-400 font-bold py-3 rounded-lg transition border border-amber-400">Experimente Grátis por 30 dias</button>
+                    <button id="subscribe-plus" class="mt-8 w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-lg transition">Aproveite a Oferta</button>
                 </div>
                 <!-- Plano Advance -->
                 <div class="bg-slate-800 rounded-2xl p-8 border-2 border-slate-700 flex flex-col">
@@ -392,19 +324,13 @@
                         <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Galeria ilimitada</li>
                         <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Relatórios de desempenho</li>
                     </ul>
-                    <button class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</button>
+                    <button id="subscribe-advance" class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</button>
                 </div>
             </div>
-            <div id="plano-anual-banner" class="mt-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl p-8 text-center flex flex-col md:flex-row items-center justify-between">
-                <div>
-                    <h3 class="text-3xl font-bold text-white">Assine o Plano Anual e Ganhe 2 Meses Grátis!</h3>
-                    <p class="text-white/90 mt-2">Comprometa-se com o crescimento e economize no longo prazo.</p>
-                </div>
-                <a href="#ferramentas" class="mt-6 md:mt-0 bg-white text-amber-600 font-bold py-3 px-8 rounded-lg text-lg whitespace-nowrap">Quero a Oferta Anual</a>
-            </div>
+            <!-- Container para o botão de pagamento do Mercado Pago -->
+            <div id="wallet_container" class="mt-8"></div>
         </section>
         
-        <!-- Seção de Depoimentos em Carrossel -->
         <section id="depoimentos" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">O Que Dizem Sobre Nós</h2>
@@ -424,8 +350,6 @@
                 </button>
             </div>
         </section>
-
-        <!-- Seção Ferramentas IA -->
         <section id="ferramentas" class="mb-20">
             <div class="text-center mb-12">
                 <div class="inline-block bg-slate-800 border border-slate-700 rounded-full px-6 py-2 mb-4">
@@ -458,7 +382,7 @@
                     </div>
                     <div class="text-center">
                         <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1611162B17474-5b21e-879e-113?q=80&w=400&auto=format&fit=crop"
+                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e-879e-113?q=80&w=400&auto=format&fit=crop"
                                   class="w-full max-w-sm mx-auto rounded-2xl shadow-xl float-animation" alt="Representação visual de IA">
                             <div class="absolute -top-4 -right-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
                                 IA Ativa
@@ -468,31 +392,6 @@
                 </div>
             </div>
         </section>
-        <!-- Resultado do Roteiro IA -->
-        <section id="ai-result" class="mb-20 hidden">
-            <div class="max-w-4xl mx-auto bg-slate-800 rounded-3xl p-8 shadow-xl border border-slate-700">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-3xl font-bold text-white">
-                        <i class="fas fa-file-invoice text-amber-400 mr-3"></i>Roteiro Gerado para Cliente
-                    </h3>
-                    <button id="close-ai-result" class="text-slate-400 hover:text-white text-2xl">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div id="ai-result-content" class="prose prose-invert prose-lg max-w-none">
-                    <!-- Conteúdo será inserido aqui -->
-                </div>
-                <div class="mt-8 flex gap-4">
-                    <button class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-xl font-semibold transition-colors">
-                        <i class="fas fa-download mr-2"></i>Baixar PDF da Proposta
-                    </button>
-                    <button class="bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 px-6 py-3 rounded-xl font-semibold transition-colors">
-                        <i class="fas fa-share mr-2"></i>Enviar para Cliente
-                    </button>
-                </div>
-            </div>
-        </section>
-         <!-- Seção Comunidade -->
         <section id="comunidade" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Junte-se à Nossa Comunidade</h2>
@@ -555,11 +454,12 @@
     
     <!-- Scripts do Firebase -->
     <script type="module">
-        // Importa as funções que precisamos das bibliotecas do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // O SEU CÓDIGO DE LIGAÇÃO QUE VOCÊ COPIOU DO SITE DO FIREBASE
+
         const firebaseConfig = {
             apiKey: "AIzaSyD9NtZa51yCmigqGMXtOAtxSVhcP2gh1CM",
             authDomain: "sua-viagem-aqui-df2df.firebaseapp.com",
@@ -570,14 +470,60 @@
             measurementId: "G-JBT22E5ZZN"
         };
 
-        // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
-        // Inicializa o Firestore (a nossa base de dados)
         const db = getFirestore(app);
+        const functions = getFunctions(app, 'southamerica-east1');
+        const auth = getAuth(app);
 
-        // --- INÍCIO DA LÓGICA COM FIREBASE REAL ---
+        const ADMIN_EMAIL = "sobrevivencialismo.silvio@gmail.com";
 
-        // LÓGICA DA BUSCA COM FIREBASE
+        onAuthStateChanged(auth, user => {
+            if (user && user.email === ADMIN_EMAIL) {
+                const adminButton = document.createElement('a');
+                adminButton.href = 'admin.html';
+                adminButton.className = 'bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-all mr-2';
+                adminButton.innerHTML = `<i class="fas fa-user-shield mr-2"></i> Painel Admin`;
+                
+                document.getElementById('login-btn').parentElement.prepend(adminButton);
+            }
+        });
+
+        const mp = new MercadoPago('APP_USR-02613eca-74a8-41c0-8800-044a325e5d15', {
+            locale: 'pt-BR'
+        });
+
+        async function createCheckout(plan) {
+            const criarPreferencia = httpsCallable(functions, 'criarPreferenciaDePagamento');
+            
+            try {
+                const result = await criarPreferencia({ title: plan.title, price: plan.price });
+                const preferenceId = result.data.preferenceId;
+                
+                const checkoutContainer = document.getElementById('wallet_container');
+                checkoutContainer.innerHTML = '';
+
+                await mp.bricks().create("wallet", "wallet_container", {
+                    initialization: {
+                        preferenceId: preferenceId,
+                    },
+                });
+
+            } catch (error) {
+                console.error("Erro ao criar preferência:", error);
+                alert("Não foi possível iniciar o pagamento. Tente novamente.");
+            }
+        }
+
+        document.getElementById('subscribe-basic').addEventListener('click', () => {
+            createCheckout({ title: 'Plano Basic', price: 99.00 });
+        });
+        document.getElementById('subscribe-plus').addEventListener('click', () => {
+            createCheckout({ title: 'Plano Plus', price: 99.00 });
+        });
+        document.getElementById('subscribe-advance').addEventListener('click', () => {
+            createCheckout({ title: 'Plano Advance', price: 399.00 });
+        });
+        
         const searchBtn = document.getElementById('search-btn');
         const searchResultsSection = document.getElementById('search-results-section');
         const searchResultsGrid = document.getElementById('search-results-grid');
@@ -593,7 +539,6 @@
 
             try {
                 const partnersRef = collection(db, "partners");
-                // *** ALTERAÇÃO IMPORTANTE: Agora só buscamos parceiros com status "aprovado" ***
                 const q = query(partnersRef, where("status", "==", "aprovado"));
                 
                 const querySnapshot = await getDocs(q);
@@ -602,12 +547,10 @@
                     allPartners.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Pega os valores dos filtros
                 const categoria = document.getElementById('categoria-select').value;
                 const cidade = document.getElementById('cidade-select').value;
                 const destino = document.getElementById('destino-input').value.toLowerCase();
 
-                // Filtra os resultados que vieram da base de dados
                 const results = allPartners.filter(partner => {
                     const matchCategoria = (categoria === 'todos') || (partner.category === categoria);
                     const matchCidade = (cidade === 'qualquer') || (partner.city === cidade);
@@ -660,15 +603,11 @@
             document.getElementById('cidade-select').value = 'qualquer';
         });
 
-        // --- FIM DA LÓGICA COM FIREBASE REAL ---
-
-        // --- INÍCIO DA LÓGICA DA PREVISÃO DO TEMPO ---
         const weatherWidget = document.getElementById('weather-widget');
         const apiKey = '86e431b64946e1fa4186125cb6a054ef';
         const city = 'Rio de Janeiro'; 
 
         async function fetchWeather() {
-            // *** ALTERAÇÃO: URL para a API de previsão de 5 dias ***
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
 
             try {
@@ -677,17 +616,14 @@
                 
                 const data = await response.json();
                 
-                // Filtra a lista para obter a previsão do meio-dia para os próximos dias
                 const dailyForecasts = data.list.filter(item => item.dt_txt.includes("12:00:00"));
 
-                // Pega os dados de hoje (o primeiro da lista)
                 const today = dailyForecasts[0];
                 const todayIcon = getWeatherIcon(today.weather[0].id);
                 const todayTemp = Math.round(today.main.temp);
-                const todayDesc = today.weather[0].description;
 
                 let forecastHTML = `
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-4 flex-1">
                         <div>
                             <p class="text-lg font-semibold text-white">${data.city.name}</p>
                             <p class="text-sm text-slate-300">Hoje</p>
@@ -700,7 +636,6 @@
                     <div class="border-l border-slate-600 pl-4 flex space-x-4">
                 `;
 
-                // Pega os dados para os próximos 2 dias
                 for (let i = 1; i < 3 && i < dailyForecasts.length; i++) {
                     const day = dailyForecasts[i];
                     const dayName = new Date(day.dt * 1000).toLocaleDateString('pt-BR', { weekday: 'short' });
@@ -726,23 +661,19 @@
         }
         
         function getWeatherIcon(weatherId) {
-            if (weatherId >= 200 && weatherId < 300) return 'fa-bolt'; // Tempestade
-            if (weatherId >= 300 && weatherId < 400) return 'fa-cloud-rain'; // Chuvisco
-            if (weatherId >= 500 && weatherId < 600) return 'fa-cloud-showers-heavy'; // Chuva
-            if (weatherId >= 600 && weatherId < 700) return 'fa-snowflake'; // Neve
-            if (weatherId >= 700 && weatherId < 800) return 'fa-smog'; // Névoa/Fumaça
-            if (weatherId === 800) return 'fa-sun'; // Céu limpo
-            if (weatherId === 801) return 'fa-cloud-sun'; // Poucas nuvens
-            if (weatherId > 801) return 'fa-cloud'; // Nublado
-            return 'fa-question-circle'; // Padrão
+            if (weatherId >= 200 && weatherId < 300) return 'fa-bolt';
+            if (weatherId >= 300 && weatherId < 400) return 'fa-cloud-rain';
+            if (weatherId >= 500 && weatherId < 600) return 'fa-cloud-showers-heavy';
+            if (weatherId >= 600 && weatherId < 700) return 'fa-snowflake';
+            if (weatherId >= 700 && weatherId < 800) return 'fa-smog';
+            if (weatherId === 800) return 'fa-sun';
+            if (weatherId === 801) return 'fa-cloud-sun';
+            if (weatherId > 801) return 'fa-cloud';
+            return 'fa-question-circle';
         }
 
         fetchWeather();
 
-        // --- FIM DA LÓGICA DA PREVISÃO DO TEMPO ---
-
-        // O resto do seu código JavaScript para os carrosséis, etc.
-        // --- Dados dos Carrosséis ---
         const agenciesData = [
             { text: 'A', name: 'Agência Alpha', desc: 'Especialistas em viagens de luxo e experiências exclusivas.' },
             { text: 'B', name: 'Beta Travel', desc: 'Foco em destinos exóticos e aventuras inesquecíveis.' },
@@ -751,12 +682,12 @@
             { text: 'E', name: 'Epsilon Tours', desc: 'Viagens de bem-estar e retiros espirituais.' }
         ];
         const partnersData = [
-            { img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=400', title: 'Restaurante Vista Mar', category: 'Gastronomia', rating: 5, tagline: 'Sabor e brisa em cada prato.' },
-            { img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400', title: 'Pousada Aconchego', category: 'Hospedagem', rating: 4, tagline: 'Seu refúgio na serra.' },
-            { img: 'https://images.unsplash.com/photo-1533106418989-88406e76827a?q=80&w=400', title: 'Guia Aventura Radical', category: 'Turismo', rating: 5, tagline: 'Emoção em cada trilha.' },
-            { img: 'https://images.unsplash.com/photo-1504754524776-8f4f37790774?q=80&w=400', title: 'Café do Viajante', category: 'Cafeteria', rating: 4, tagline: 'Uma pausa para o seu roteiro.' },
-            { img: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=400', title: 'Hotel Paraíso das Águas', category: 'Resort', rating: 5, tagline: 'Luxo e natureza em harmonia.' },
-            { img: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=400', title: 'Trilhas & Picos', category: 'Ecoturismo', rating: 4, tagline: 'Explore o selvagem.' },
+            { img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=400', title: 'Restaurante Vista Mar', category: 'Gastronomia', rating: 5 },
+            { img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400', title: 'Pousada Aconchego', category: 'Hospedagem', rating: 4 },
+            { img: 'https://images.unsplash.com/photo-1533106418989-88406e76827a?q=80&w=400', title: 'Guia Aventura Radical', category: 'Turismo', rating: 5 },
+            { img: 'https://images.unsplash.com/photo-1504754524776-8f4f37790774?q=80&w=400', title: 'Café do Viajante', category: 'Cafeteria', rating: 4 },
+            { img: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=400', title: 'Hotel Paraíso das Águas', category: 'Resort', rating: 5 },
+            { img: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=400', title: 'Trilhas & Picos', category: 'Ecoturismo', rating: 4 },
         ];
         const advertiserData = [
             { name: 'Pousada Brisa Mar', plan: 'Plus', images: ['https://images.unsplash.com/photo-1563911302283-d2bc129e7570?q=80&w=400', 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=400'], category: 'hospedagem', contact: '(11) 98765-4321' },
@@ -801,13 +732,12 @@
             }
         ];
         
-        // --- Lógica da Seção "Mais Agências para seu Passeio" ---
         const advertiserGrid = document.getElementById('advertiser-grid');
         if (advertiserGrid) {
             const shuffledAdvertisers = advertiserData.sort(() => 0.5 - Math.random());
             const selectedAdvertisers = shuffledAdvertisers.slice(0, 8);
             
-            selectedAdvertisers.forEach((ad, index) => {
+            selectedAdvertisers.forEach((ad) => {
                 const card = document.createElement('div');
                 card.className = 'bg-slate-800 rounded-2xl overflow-hidden flex flex-col card-hover';
                 card.dataset.currentImageIndex = '0';
@@ -861,7 +791,6 @@
             }, 4000);
         }
 
-        // --- Lógica do Carrossel de Agências ---
         const carouselTrack = document.getElementById('carousel-track');
         if (carouselTrack) {
             agenciesData.sort(() => Math.random() - 0.5);
@@ -925,7 +854,6 @@
             startAutoScroll();
         }
 
-        // --- Lógica do Carrossel de Parceiros (TripAdvisor Style) ---
         const partnersTrack = document.getElementById('partners-carousel-track');
         if(partnersTrack) {
             let allPartners = [...partnersData, ...partnersData];
@@ -961,7 +889,7 @@
                     }
                 }, 30);
             }
-            function stopAutoScroll() {
+            function stopScrolling() {
                 clearInterval(scrollInterval);
             }
             partnersNextBtn.addEventListener('click', () => { 
@@ -973,11 +901,10 @@
                  partnersContainer.scrollBy({ left: -slideWidth, behavior: 'smooth' });
             });
             partnersContainer.addEventListener('mouseenter', stopScrolling);
-            partnersContainer.addEventListener('mouseleave', startAutoScroll);
+            partnersContainer.addEventListener('mouseleave', startScrolling);
             startScrolling();
         }
 
-        // --- Lógica do Carrossel de Depoimentos ---
         const testimonialsTrack = document.getElementById('testimonials-track');
         if (testimonialsTrack) {
             testimonialsData.forEach(testimonial => {
@@ -1025,7 +952,7 @@
                 autoScrollInterval = setInterval(() => {
                     currentIndex = (currentIndex >= maxIndex) ? 0 : currentIndex + 1;
                     updateCarousel();
-                }, 6000); // Slower scroll for testimonials
+                }, 6000);
             }
 
             function stopAutoScroll() {
@@ -1057,4 +984,3 @@
     </script>
 </body>
 </html>
-
