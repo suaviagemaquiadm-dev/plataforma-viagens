@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração - Sua Viagem Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0D1117;
+            color: #E6EDF3;
+        }
+        .card {
+            background-color: #161B22;
+            border: 1px solid #30363D;
+            border-radius: 12px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-approve { background-color: #1f7c4a; color: white; }
+        .btn-approve:hover { background-color: #28a745; }
+        .btn-reject { background-color: #b91c1c; color: white; }
+        .btn-reject:hover { background-color: #dc2626; }
+        .btn-logout { background-color: #4b5563; color: white; }
+        .btn-logout:hover { background-color: #6b7280; }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-pendente { background-color: #a16207; color: #fef08a; }
+        .status-aprovado { background-color: #166534; color: #bbf7d0; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Container de Loading -->
+    <div id="loading-container" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
+            <p class="mt-4 text-lg text-white">A carregar...</p>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal (escondido até a verificação) -->
+    <main id="main-content" class="hidden">
+        <header class="flex flex-wrap justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Painel de Administração</h1>
+                <p class="text-gray-400">Gestão de parceiros e aprovações.</p>
+            </div>
+            <button id="logout-button" class="btn btn-logout">
+                <i class="fas fa-sign-out-alt mr-2"></i>Sair
+            </button>
+        </header>
+
+        <!-- Seção de Solicitações Pendentes -->
+        <section id="pending-section">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-l-4 border-orange-500 pl-3">Solicitações Pendentes</h2>
+            <div id="pending-list" class="space-y-4">
+                <!-- Cards de parceiros pendentes serão inseridos aqui -->
+                <p id="no-pending-message" class="text-gray-400 italic hidden">Não há novas solicitações pendentes.</p>
+            </div>
+        </section>
+
+        <hr class="border-gray-700 my-10">
+
+        <!-- Seção de Parceiros Aprovados -->
+        <section id="approved-section">
+            <h2 class="text-2xl font-semibold text-white mb-4 border-l-4 border-green-500 pl-3">Parceiros Aprovados</h2>
+            <div id="approved-list" class="space-y-4">
+                <!-- Cards de parceiros aprovados serão inseridos aqui -->
+                 <p id="no-approved-message" class="text-gray-400 italic hidden">Ainda não há parceiros aprovados.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script Firebase -->
+    <script type="module">
+        // 1. Importações
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+
+        // 2. Configuração Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVThw7fxVoEQHJMMiuwLfLSvlevKetlIg",
+            authDomain: "sua-viagem-aqui-b0173.firebaseapp.com",
+            projectId: "sua-viagem-aqui-b0173",
+            storageBucket: "sua-viagem-aqui-b0173.appspot.com",
+            messagingSenderId: "593994869307",
+            appId: "1:593994869307:web:c66462ff2c524f55ad0a1e",
+            measurementId: "G-YM78TFYN25"
+        };
+
+        // 3. Inicialização
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app, 'southamerica-east1');
+        const ADMIN_EMAIL = "suaviagemaqui.adm@gmail.com";
+
+        // 4. Elementos do DOM
+        const loadingContainer = document.getElementById('loading-container');
+        const mainContent = document.getElementById('main-content');
+        const pendingList = document.getElementById('pending-list');
+        const approvedList = document.getElementById('approved-list');
+        const noPendingMessage = document.getElementById('no-pending-message');
+        const noApprovedMessage = document.getElementById('no-approved-message');
+
+        // 5. Controlo de Acesso
+        onAuthStateChanged(auth, user => {
+            if (user && user.email === ADMIN_EMAIL) {
+                // Utilizador é o admin, mostrar conteúdo
+                mainContent.classList.remove('hidden');
+                loadingContainer.classList.add('hidden');
+                loadPartners();
+            } else {
+                // Não é o admin ou não está logado, redirecionar para login
+                window.location.href = 'pagina_login.html';
+            }
+        });
+
+        // 6. Carregar Parceiros do Firestore em tempo real
+        function loadPartners() {
+            const partnersRef = collection(db, 'partners');
+            
+            // Query para pendentes
+            const qPending = query(partnersRef, where("status", "==", "pendente"));
+            onSnapshot(qPending, snapshot => {
+                pendingList.innerHTML = ''; // Limpar antes de renderizar
+                if(snapshot.empty) {
+                    noPendingMessage.classList.remove('hidden');
+                } else {
+                    noPendingMessage.classList.add('hidden');
+                    snapshot.forEach(doc => {
+                        renderPartnerCard(doc.data(), doc.id, pendingList);
+                    });
+                }
+            });
+
+            // Query para aprovados
+            const qApproved = query(partnersRef, where("status", "==", "aprovado"));
+            onSnapshot(qApproved, snapshot => {
+                approvedList.innerHTML = ''; // Limpar antes de renderizar
+                if(snapshot.empty) {
+                    noApprovedMessage.classList.remove('hidden');
+                } else {
+                    noApprovedMessage.classList.add('hidden');
+                    snapshot.forEach(doc => {
+                        renderPartnerCard(doc.data(), doc.id, approvedList);
+                    });
+                }
+            });
+        }
+
+        // 7. Renderizar Card de Parceiro
+        function renderPartnerCard(data, id, listElement) {
+            const card = document.createElement('div');
+            card.className = 'card p-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-center';
+            card.dataset.id = id;
+
+            const isPending = data.status === 'pendente';
+            const statusBadge = `<span class="status-badge ${data.status === 'pendente' ? 'status-pendente' : 'status-aprovado'}">${data.status}</span>`;
+            const partnerIdHTML = data.partnerId ? `<p class="text-sm text-gray-300">ID: <span class="font-mono">${data.partnerId}</span></p>` : '';
+
+            card.innerHTML = `
+                <!-- Coluna 1: Informações -->
+                <div class="md:col-span-1 space-y-1">
+                    <h3 class="text-xl font-bold text-white">${data.businessName}</h3>
+                    <p class="text-gray-400">${data.ownerName}</p>
+                    <p class="text-sm text-gray-400"><i class="fas fa-envelope mr-2"></i>${data.email}</p>
+                    <p class="text-sm text-gray-400"><i class="fab fa-whatsapp mr-2"></i>${data.whatsapp}</p>
+                </div>
+
+                <!-- Coluna 2: Status e ID -->
+                <div class="md:col-span-1 text-left md:text-center">
+                    ${statusBadge}
+                    ${partnerIdHTML}
+                </div>
+
+                <!-- Coluna 3: Ações -->
+                <div class="md:col-span-1 flex items-center justify-end space-x-3">
+                    ${isPending ? `
+                        <button class="btn btn-approve" data-action="approve">
+                            <i class="fas fa-check mr-2"></i>Aprovar
+                        </button>
+                        <button class="btn btn-reject" data-action="reject">
+                            <i class="fas fa-times mr-2"></i>Recusar
+                        </button>
+                    ` : `
+                        <button class="btn btn-reject" data-action="remove">
+                            <i class="fas fa-trash-alt mr-2"></i>Remover
+                        </button>
+                    `}
+                </div>
+            `;
+            listElement.appendChild(card);
+        }
+
+        // 8. Lógica dos Botões de Ação
+        document.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target || !target.dataset.action) return;
+
+            const action = target.dataset.action;
+            const card = target.closest('.card');
+            const partnerId = card.dataset.id;
+
+            if (action === 'approve') {
+                target.disabled = true;
+                target.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                try {
+                    // Chamar a Cloud Function para aprovar e gerar o ID
+                    const approvePartner = httpsCallable(functions, 'approvePartner');
+                    const result = await approvePartner({ partnerUid: partnerId });
+                    console.log(result.data.message);
+                } catch (error) {
+                    console.error("Erro ao aprovar parceiro:", error);
+                    alert("Ocorreu um erro ao aprovar o parceiro.");
+                    target.disabled = false;
+                    target.innerHTML = '<i class="fas fa-check mr-2"></i>Aprovar';
+                }
+            }
+
+            if (action === 'reject') {
+                if (confirm('Tem a certeza de que quer recusar e apagar este cadastro? Esta ação não pode ser revertida.')) {
+                    try {
+                        await deleteDoc(doc(db, 'partners', partnerId));
+                        // O Auth user ainda existe, pode ser removido manualmente ou por uma função
+                        console.log('Documento do parceiro apagado.');
+                    } catch (error) {
+                        console.error("Erro ao recusar parceiro:", error);
+                        alert("Ocorreu um erro ao recusar o parceiro.");
+                    }
+                }
+            }
+            
+            if (action === 'remove') {
+                if (confirm('Tem a certeza de que quer REMOVER este parceiro aprovado?')) {
+                    // Adicionar lógica de remoção se necessário
+                    console.log('Remover parceiro aprovado:', partnerId);
+                }
+            }
+        });
+        
+        // 9. Logout
+        document.getElementById('logout-button').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            }).catch(error => {
+                console.error('Erro ao fazer logout:', error);
+            });
+        });
+
+    </script>
+</body>
+</html>
+

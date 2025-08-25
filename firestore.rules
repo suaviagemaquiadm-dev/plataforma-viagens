@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permite que qualquer pessoa LEIA os dados públicos, mas não escreva.
+    match /advertisers/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /agencies/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /partners_premium/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /testimonials/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+     match /partners/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
