@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sua Viagem Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0D1117;
+            color: #E6EDF3; 
+        }
+        .form-container {
+            background-color: #161B22;
+            border: 1px solid #30363D;
+        }
+        .form-input {
+            background-color: #010409;
+            border: 1px solid #30363D;
+            color: #E6EDF3;
+            border-radius: 6px;
+            padding: 10px 12px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #FF3300;
+        }
+        .btn-submit {
+            background-color: #2AABEE;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background-color: #52bcf1;
+        }
+        .btn-submit:disabled {
+            background-color: #2aabee8a;
+            cursor: not-allowed;
+        }
+        .modern-spinner { 
+            width: 20px; 
+            height: 20px; 
+            border: 2px solid rgba(255,255,255,0.3); 
+            border-top: 2px solid #FFF; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-md mx-auto p-4">
+        <div class="text-center mb-8">
+            <a href="/" class="flex items-center justify-center group">
+                <i class="fas fa-map-marker-alt text-yellow-400 text-3xl mr-3"></i>
+                <span class="text-3xl font-bold text-white">Sua Viagem <span class="text-orange-500">Aqui</span></span>
+            </a>
+        </div>
+
+        <div class="form-container rounded-lg p-8 shadow-lg">
+            <h2 class="text-2xl font-bold text-center text-white mb-2">Acesse a sua Conta</h2>
+            <p class="text-center text-gray-400 mb-6">Bem-vindo de volta!</p>
+
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-300 text-sm font-medium mb-2">E-mail</label>
+                    <input type="email" id="email" class="form-input" autocomplete="email" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-gray-300 text-sm font-medium mb-2">Senha</label>
+                    <input type="password" id="password" class="form-input" autocomplete="current-password" required>
+                </div>
+
+                <div id="error-message" class="hidden bg-red-800 border border-red-700 text-white text-sm rounded-lg p-3 mb-4 text-center">
+                    <!-- Mensagem de erro aparecerá aqui -->
+                </div>
+
+                <button type="submit" id="login-btn" class="btn-submit w-full">
+                    <span id="btn-text">Entrar</span>
+                    <span id="btn-loading" class="hidden items-center justify-center">
+                        <div class="modern-spinner mr-2"></div>Aguarde...
+                    </span>
+                </button>
+            </form>
+
+            <p class="text-center text-sm text-gray-400 mt-6">
+                Não tem uma conta? 
+                <a href="/cadastro.html" class="font-medium text-orange-500 hover:underline">Cadastre-se</a>
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuração oficial do Firebase para o seu projeto.
+        const firebaseConfig = {
+          apiKey: "AIzaSyAR3cjd3d4Bnzhv-iai20yeEVBSzu5k1Qo",
+          authDomain: "sua-viagem-aqui-v2.firebaseapp.com",
+          projectId: "sua-viagem-aqui-v2",
+          storageBucket: "sua-viagem-aqui-v2.appspot.com",
+          messagingSenderId: "508306740983",
+          appId: "1:508306740983:web:c1ce3824d51e098416a5f2",
+          measurementId: "G-FZKQ66PXFH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoading = document.getElementById('btn-loading');
+        const errorMessageDiv = document.getElementById('error-message');
+        
+        // --- CRIAÇÃO DE SUPERUSUÁRIO ---
+        // Para criar um novo superusuário com acesso total, adicione o UID dele a esta lista.
+        // Pode encontrar o UID de um utilizador no painel do Firebase Authentication.
+        const SUPER_ADMIN_UIDS = [
+            "CvRLIc81hgX22SQsP93YZNj4xhi1", // UID do Admin 1
+            "YLJNed4iETgnI87z8WOLmOkgGjD3",  // UID do Admin 2 (Corrigido)
+        ];
+        const ADMIN_EMAIL = "suaviagemaqui.adm@gmail.com";
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Impede o recarregamento da página
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Mostra o feedback de carregamento
+            btnText.textContent = 'A entrar...';
+            loginBtn.disabled = true;
+            errorMessageDiv.classList.add('hidden');
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Após o login bem-sucedido, verifica o tipo de conta para redirecionar
+                const q = query(collection(db, "users"), where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+                const userData = querySnapshot.docs[0]?.data();
+
+                const isSuperAdmin = SUPER_ADMIN_UIDS.includes(user.uid);
+                const isAdminByRole = userData?.accountType === 'admin';
+                const isAdminByEmail = user.email === ADMIN_EMAIL;
+                
+                if (isSuperAdmin || isAdminByRole || isAdminByEmail) {
+                    window.location.href = '/admin.html';
+                } else {
+                    window.location.href = '/dashboard.html';
+                }
+
+            } catch (error) {
+                console.error("Erro no login:", error);
+                let message = "Ocorreu um erro inesperado. Tente novamente.";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    message = "E-mail ou senha inválidos. Verifique os seus dados.";
+                }
+                errorMessageDiv.textContent = message;
+                errorMessageDiv.classList.remove('hidden');
+
+                // Restaura o botão
+                btnText.textContent = 'Entrar';
+                loginBtn.disabled = false;
+            }
+        });
+
+    </script>
+</body>
+</html>
+

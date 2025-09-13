@@ -1,7 +1,23 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permite que qualquer pessoa LEIA os dados públicos, mas não escreva.
+
+    // Regra para a coleção de parceiros (anunciantes)
+    match /partners/{partnerId} {
+      allow create: if true;
+      allow read, update: if request.auth != null && (request.auth.uid == partnerId || request.auth.token.email == 'suaviagemaqui.adm@gmail.com');
+      allow delete: if request.auth != null && request.auth.token.email == 'suaviagemaqui.adm@gmail.com';
+    }
+
+    // REGRA PARA A COLEÇÃO DE VIAJANTES
+    match /users/{userId} {
+      // Permite que um utilizador crie e atualize o seu próprio perfil.
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      // Permite que um utilizador leia o seu próprio perfil e que o admin leia qualquer perfil.
+      allow read: if request.auth != null && (request.auth.uid == userId || request.auth.token.email == 'suaviagemaqui.adm@gmail.com');
+    }
+
+    // Mantém as suas outras regras para leitura pública
     match /advertisers/{docId} {
       allow read: if true;
       allow write: if false;
@@ -15,10 +31,6 @@ service cloud.firestore {
       allow write: if false;
     }
     match /testimonials/{docId} {
-      allow read: if true;
-      allow write: if false;
-    }
-     match /partners/{docId} {
       allow read: if true;
       allow write: if false;
     }

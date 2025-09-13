@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "sua-viagem-aqui-b0173"
-  }
+    "default": "sua-viagem-aqui-v2"
+  },
+  "targets": {},
+  "etags": {}
 }
