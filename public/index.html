@@ -53,9 +53,10 @@
         .float-animation { animation: float 5s ease-in-out infinite; }
         
         #hero-section {
-            background-image: url('https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?q=80&w=1974&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
+            position: relative; /* Added for positioning carousel images */
+            overflow: hidden; /* Added to hide overflowing images */
         }
         #hero-section::before {
             content: '';
@@ -66,6 +67,19 @@
             bottom: 0;
             background-color: rgba(13, 17, 23, 0.7); 
             z-index: 1;
+        }
+        #hero-carousel img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        #hero-carousel img.active {
+            opacity: 1;
         }
         #hero-section .container {
             position: relative;
@@ -121,7 +135,12 @@
     <main id="main-content">
         <!-- Hero Section -->
         <section id="hero-section" class="relative py-24 md:py-32 flex items-center justify-center">
-            <div class="container mx-auto px-4 text-center">
+            <div id="hero-carousel" class="absolute inset-0">
+                <img src="https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?q=80&w=1974&auto=format&fit=crop" alt="Paisagem do Brasil 1" class="active">
+                <img src="https://images.unsplash.com/photo-1501785888041-af3ba6f06ceb?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Paisagem do Brasil 2">
+                <img src="https://images.unsplash.com/photo-1506011282152-aa8911acef77?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Paisagem do Brasil 3">
+            </div>
+            <div class="container mx-auto px-4 text-center" style="position: relative; z-index: 2;">
                 <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
                     A plataforma definitiva para<br>
                     <span class="text-custom-orange">agências de viagens</span>
@@ -898,6 +917,32 @@
                 });
             }
 
+
+            // Hero Carousel
+            const heroImages = [
+                'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?q=80&w=1974&auto=format&fit=crop', // Placeholder for Brazilian landscape 1
+                'https://images.unsplash.com/photo-1501785888041-af3ba6f06ceb?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Placeholder for Brazilian landscape 2
+                'https://images.unsplash.com/photo-1506011282152-aa8911acef77?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'  // Placeholder for Brazilian landscape 3
+            ];
+            let currentHeroImageIndex = 0;
+            const heroCarouselDiv = document.getElementById('hero-carousel');
+
+            function updateHeroCarousel() {
+                const images = heroCarouselDiv.querySelectorAll('img');
+                images.forEach((img, index) => {
+                    if (index === currentHeroImageIndex) {
+                        img.classList.add('active');
+                    } else {
+                        img.classList.remove('active');
+                    }
+                });
+                currentHeroImageIndex = (currentHeroImageIndex + 1) % heroImages.length;
+            }
+
+            // Initial call
+            updateHeroCarousel();
+            // Set interval for carousel
+            setInterval(updateHeroCarousel, 10000); // 10 seconds
 
             fetchWeather();
             populateCarouselsAndGrids();
