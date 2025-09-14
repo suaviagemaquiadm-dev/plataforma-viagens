@@ -54,6 +54,7 @@
                 <div class="max-w-2xl mx-auto bg-custom-card rounded-xl p-8 shadow-lg border border-custom">
                     <h2 class="text-3xl font-bold text-white text-center mb-8">Cadastro de Anunciante</h2>
                     <form id="cadastro-form">
+                        <input type="hidden" id="plan" name="plan">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
                                 <label for="business-name" class="block text-gray-300 text-sm font-semibold mb-2">Nome do Estabelecimento</label>
@@ -172,6 +173,15 @@
 
                 // Redirect to a success page or login
                 window.location.href = '/pagina-login.html'; 
+
+            } catch (error) {
+                console.error("Error signing up:", error);
+                alert("Erro ao cadastrar: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>             window.location.href = '/pagina-login.html'; 
 
             } catch (error) {
                 console.error("Error signing up:", error);
