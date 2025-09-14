@@ -108,3 +108,41 @@ exports.criarPreferenciaDePagamento = onCall({region: "southamerica-east1"}, asy
         throw new functions.https.HttpsError('internal', 'Não foi possível criar a preferência de pagamento.');
     }
 });
+
+exports.applyGuidePromotion = onDocumentCreated("users/{userId}", async (event) => {
+    const userData = event.data.data();
+    const userId = event.params.userId;
+
+    // Check if the new user is a guide
+    if (userData.category === 'guias') {
+        const promoRef = db.doc('promotions/guides_promo');
+        const userRef = db.doc(`users/${userId}`);
+
+        try {
+            await db.runTransaction(async (transaction) => {
+                const promoDoc = await transaction.get(promoRef);
+
+                let count = 0;
+                if (promoDoc.exists) {
+                    count = promoDoc.data().count;
+                }
+
+                if (count < 25) {
+                    // Increment the counter
+                    transaction.set(promoRef, { count: count + 1 }, { merge: true });
+
+                    // Apply the promotion to the user
+                    const promotionEndDate = new Date();
+                    promotionEndDate.setMonth(promotionEndDate.getMonth() + 2);
+                    transaction.update(userRef, { 
+                        promotionEndDate: promotionEndDate,
+                        plan: 'basic' // Set the plan to basic
+                    });
+                }
+            });
+            console.log(`Promotion applied to guide ${userId}`);
+        } catch (error) {
+            console.error("Error applying promotion:", error);
+        }
+    }
+});
