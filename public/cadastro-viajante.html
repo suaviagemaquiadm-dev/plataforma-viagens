@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crie sua Conta Gratuita - Sua Viagem Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0D1117;
+            color: #E6EDF3; 
+        }
+        .bg-custom-card { background-color: #161B22; }
+        .border-custom { border-color: #30363D; }
+        .form-input {
+            background-color: #010409;
+            border: 1px solid #30363D;
+            color: #E6EDF3;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #FF3300;
+        }
+        .btn-submit {
+            background-color: #FF3300;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-submit:hover {
+            background-color: #ff5533;
+        }
+        .btn-submit:disabled {
+            background-color: #48515a;
+            cursor: not-allowed;
+        }
+        .feedback-message {
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .feedback-error {
+            background-color: #dc3545;
+            color: white;
+        }
+        .feedback-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .modern-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center px-4 py-12">
+        <div class="w-full max-w-2xl">
+            <div class="text-center mb-8">
+                <a href="index.html" class="inline-block mb-4">
+                    <i class="fas fa-map-marker-alt text-yellow-400 text-5xl"></i>
+                </a>
+                <h1 class="text-4xl font-bold text-white">Crie sua Conta Gratuita</h1>
+                <p class="text-gray-400 mt-2">Comece a explorar as melhores dicas e parceiros.</p>
+            </div>
+
+            <div class="bg-custom-card border border-custom rounded-xl p-8 shadow-lg">
+                <form id="register-form" novalidate>
+                    <h2 class="text-xl font-semibold text-white mb-6 border-b border-custom pb-3">Dados Pessoais</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="fullName" class="block text-gray-300 text-sm font-semibold mb-2">Nome Completo</label>
+                            <input type="text" id="fullName" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="whatsapp" class="block text-gray-300 text-sm font-semibold mb-2">WhatsApp</label>
+                            <input type="tel" id="whatsapp" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="telegram" class="block text-gray-300 text-sm font-semibold mb-2">Telegram (Opcional)</label>
+                            <input type="tel" id="telegram" class="form-input">
+                        </div>
+                        <div>
+                            <label for="telegram" class="block text-gray-300 text-sm font-semibold mb-2">Telegram (Opcional)</label>
+                            <input type="tel" id="telegram" class="form-input">
+                        </div>
+                        <div>
+                            <label for="cpf" class="block text-gray-300 text-sm font-semibold mb-2">CPF</label>
+                            <input type="text" id="cpf" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="age" class="block text-gray-300 text-sm font-semibold mb-2">Idade</label>
+                            <input type="number" id="age" class="form-input" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="city" class="block text-gray-300 text-sm font-semibold mb-2">Cidade / Estado</label>
+                            <input type="text" id="city" class="form-input" required placeholder="Ex: Ubatuba / SP">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 flex items-center mt-4">
+                        <input type="checkbox" id="joinTelegramGroup" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-400">
+                        <label for="joinTelegramGroup" class="ml-2 block text-gray-300 text-sm font-semibold">Aceita Fazer Parte do Grupo SVA | Alertas de Viagem</label>
+                    </div>
+
+                    <h2 class="text-xl font-semibold text-white mb-6 border-b border-custom pb-3">Informações de Acesso</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div>
+                            <label for="email" class="block text-gray-300 text-sm font-semibold mb-2">Email (será seu login)</label>
+                            <input type="email" id="email" class="form-input" required>
+                        </div>
+                        <div>
+                            <label for="password" class="block text-gray-300 text-sm font-semibold mb-2">Crie uma Senha</label>
+                            <input type="password" id="password" class="form-input" required minlength="6">
+                        </div>
+                    </div>
+
+                    <div id="feedback-container"></div>
+
+                    <div class="mt-8">
+                        <button type="submit" id="submit-btn" class="btn-submit">
+                           <span class="btn-text">Criar Conta</span>
+                           <div class="modern-spinner hidden"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Sua configuração do Firebase, exatamente como está no index.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7KAKukrVf__0dhjfF05KPRVmMDSDtgjk",
+            authDomain: "sua-viagem-aqui-v2.firebaseapp.com",
+            projectId: "sua-viagem-aqui-v2",
+            storageBucket: "sua-viagem-aqui-v2.appspot.com",
+            messagingSenderId: "508306740983",
+            appId: "1:508306740983:web:c1ce3824d51e098416a5f2"
+        };
+        
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Lógica do formulário
+        const form = document.getElementById('register-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.querySelector('.btn-text');
+        const spinner = document.querySelector('.modern-spinner');
+        const feedbackContainer = document.getElementById('feedback-container');
+
+        const setLoading = (isLoading) => {
+            if (isLoading) {
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                spinner.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        };
+
+        const showFeedback = (message, type) => {
+            const feedbackClass = type === 'error' ? 'feedback-error' : 'feedback-success';
+            feedbackContainer.innerHTML = `<div class="${feedbackClass} feedback-message">${message}</div>`;
+        };
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            setLoading(true);
+            feedbackContainer.innerHTML = '';
+
+            // Coleta de dados do formulário
+            const fullName = document.getElementById('fullName').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const telegram = document.getElementById('telegram').value.trim();
+            const cpf = document.getElementById('cpf').value.trim();
+            const age = document.getElementById('age').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Validação simples
+            if (!fullName || !whatsapp || !cpf || !age || !city || !email || !password) {
+                showFeedback('Por favor, preencha todos os campos obrigatórios.', 'error');
+                setLoading(false);
+                return;
+            }
+            if (password.length < 6) {
+                showFeedback('A senha deve ter no mínimo 6 caracteres.', 'error');
+                setLoading(false);
+                return;
+            }
+
+            // 1. Cria o usuário na autenticação
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    const controlId = Math.floor(100000 + Math.random() * 900000);
+
+                    // 2. Salva os dados no Firestore
+                    return db.collection("users").doc(user.uid).set({
+                        uid: user.uid,
+                        fullName,
+                        whatsapp,
+                        telegram,
+                        cpf,
+                        age: parseInt(age),
+                        city,
+                        email,
+                        controlId,
+                        role: 'traveler_free',
+                        joinTelegramGroup: document.getElementById('joinTelegramGroup').checked,
+                        createdAt: new Date()
+                    });
+                })
+                .then(() => {
+                    showFeedback('Cadastro realizado com sucesso! Redirecionando...', 'success');
+                    form.reset();
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    let errorMessage = 'Ocorreu um erro ao realizar o cadastro. Tente novamente.';
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorMessage = 'Este email já está em uso. Por favor, utilize outro.';
+                    } else if (error.code === 'auth/weak-password') {
+                        errorMessage = 'A senha é muito fraca. Ela deve ter no mínimo 6 caracteres.';
+                    }
+                    console.error("Erro de Cadastro: ", error);
+                    showFeedback(errorMessage, 'error');
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        });
+    </script>
+</body>
+</html>
