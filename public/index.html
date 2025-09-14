@@ -717,12 +717,6 @@
             }
 
             // --- FUNÇÃO PARA CARREGAR CONTEÚDO DINÂMICO ---
-            onSnapshot(query(collection(db, "partners"), where("status", "==", "aprovado")), (snapshot) => {
-                allPartnersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                allPartnersData.sort(() => 0.5 - Math.random());
-                populateCarouselsAndGrids();
-            });
-            
             function populateCarouselsAndGrids() {
                 const partnersGrid = document.getElementById('partners-grid');
                 const agenciesCarouselTrack = document.getElementById('agencies-carousel-track');
@@ -737,15 +731,46 @@
                 if (guidesCarouselTrack) guidesCarouselTrack.innerHTML = '';
                 if (testimonialsTrack) testimonialsTrack.innerHTML = '';
 
+                // Comprehensive Mock Data with plan information
+                const mockAllData = [
+                    // Agências de Turismo (Plano Advance)
+                    { id: '1', businessName: 'Agência Viagem Top', category: 'agencias', description: 'Especialistas em roteiros personalizados.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Agência+Viagem+Top', plan: 'advance' },
+                    { id: '2', businessName: 'Tour Global Agência', category: 'agencias', description: 'Sua aventura começa aqui.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Tour+Global', plan: 'advance' },
+                    { id: '3', businessName: 'Horizonte Viagens', category: 'agencias', description: 'Descubra o mundo com a gente.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Horizonte+Viagens', plan: 'advance' },
+                    
+                    // Hotéis e Pousadas (Plano Advance)
+                    { id: '4', businessName: 'Hotel Luxo Imperial', category: 'hospedagem', description: 'Conforto e sofisticação para sua estadia.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Hotel+Luxo', plan: 'advance' },
+                    { id: '5', businessName: 'Pousada Recanto Verde', category: 'hospedagem', description: 'Tranquilidade em meio à natureza.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Recanto+Verde', plan: 'advance' },
 
-                const agencies = allPartnersData.filter(p => p.category === 'agencias');
-                const guides = allPartnersData.filter(p => p.category === 'guias');
-                const premiumPartners = allPartnersData.slice(0, 12); 
+                    // Outras Categorias (Plano Plus)
+                    { id: '6', businessName: 'Restaurante Sabor Caseiro', category: 'restaurantes', description: 'Comida com gosto de casa.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Sabor+Caseiro', plan: 'plus' },
+                    { id: '7', businessName: 'Camping Estrela', category: 'camping', description: 'Noites sob as estrelas.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Camping+Estrela', plan: 'plus' },
+                    { id: '8', businessName: 'Padaria Doce Sabor', category: 'padarias', description: 'Pães fresquinhos todo dia.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Doce+Sabor', plan: 'plus' },
+                    { id: '9', businessName: 'Lanchonete Rápida', category: 'lanchonetes', description: 'Lanches deliciosos e rápidos.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Lanchonete+Rápida', plan: 'plus' },
+                    { id: '10', businessName: 'Sorveteria Gelada', category: 'sorveterias', description: 'O sorvete mais cremoso.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Sorveteria+Gelada', plan: 'plus' },
+                    { id: '11', businessName: 'Farmácia Central', category: 'farmacias', description: 'Sua saúde em primeiro lugar.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Farmácia+Central', plan: 'plus' },
+                    { id: '12', businessName: 'Artesanato Criativo', category: 'artesanato', description: 'Peças únicas e feitas à mão.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Artesanato+Criativo', plan: 'plus' },
+                    { id: '13', businessName: 'Delicatessen Gourmet', category: 'delicatessen', description: 'Sabores refinados para seu paladar.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Delicatessen+Gourmet', plan: 'plus' },
 
-                agencies.forEach(partner => agenciesCarouselTrack?.appendChild(createPartnerCarouselCard(partner, 'agencies')));
-                premiumPartners.forEach(partner => partnersCarouselTrack?.appendChild(createPartnerCarouselCard(partner, 'partners')));
-                allPartnersData.forEach(partner => partnersGrid?.appendChild(createPartnerCard(partner)));
+                    // Guias (Plano Basic) - will be filtered out from premium partners
+                    { id: '14', businessName: 'Guia Aventureiro', category: 'guias', description: 'Explore trilhas e paisagens incríveis.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Guia+Aventureiro', plan: 'basic' },
+                    { id: '15', businessName: 'Guia Histórico', category: 'guias', description: 'Viagem no tempo pela história.', coverImageUrl: 'https://placehold.co/400x300/0d1117/e6edf3?text=Guia+Histórico', plan: 'basic' }
+                ];
 
+                // Nossas Agências Premium: apenas agencias de turismo do Plano Advance
+                const agenciesPremium = mockAllData.filter(p => p.category === 'agencias' && p.plan === 'advance');
+                agenciesPremium.forEach(partner => agenciesCarouselTrack?.appendChild(createPartnerCarouselCard(partner, 'agencies')));
+
+                // Explore Nossos Parceiros Premium: todas as categorias exceto os Guias
+                const partnersPremium = mockAllData.filter(p => p.category !== 'guias');
+                partnersPremium.forEach(partner => partnersCarouselTrack?.appendChild(createPartnerCarouselCard(partner, 'partners')));
+
+                // Mais Parceiros para seu Passeio: todas da categorias do plano basic e plus
+                const morePartners = mockAllData.filter(p => p.plan === 'basic' || p.plan === 'plus');
+                morePartners.forEach(partner => partnersGrid?.appendChild(createPartnerCard(partner)));
+
+                // Guias de Turismo em Destaque (existing logic, assuming it's still needed)
+                const guides = mockAllData.filter(p => p.category === 'guias');
                 if (guides.length > 0) {
                     document.getElementById('guias-destaque')?.classList.remove('hidden');
                     guides.forEach(guide => guidesCarouselTrack?.appendChild(createPartnerCarouselCard(guide, 'guides')));
@@ -875,6 +900,7 @@
 
 
             fetchWeather();
+            populateCarouselsAndGrids();
         });
     </script>
     
