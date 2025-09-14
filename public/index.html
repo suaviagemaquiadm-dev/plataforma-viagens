@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Viagem Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0D1117;
+            color: #E6EDF3; 
+        }
+        .bg-custom-card { background-color: #161B22; }
+        .border-custom { border-color: #30363D; }
+        .text-custom-orange { color: #FF3300; }
+        .text-custom-yellow { color: #FCD34D; }
+        .btn-custom-orange { background-color: #FF3300; color: white; }
+        .btn-custom-orange:hover { background-color: #ff5533; }
+        .btn-custom-blue { background-color: #2AABEE; color: white; }
+        .btn-custom-blue:hover { background-color: #52bcf1; }
+        .btn-telegram { background-color: #2AABEE; color: white; }
+        .btn-whatsapp { background-color: #25D366; color: white; }
+        .hero-form-input, .hero-form-select, .ai-textarea {
+            background-color: #010409;
+            border: 1px solid #30363D;
+            color: #E6EDF3;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: border-color: 0.2s;
+        }
+        .hero-form-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+        .hero-form-input:focus, .hero-form-select:focus, .ai-textarea:focus { outline: none; border-color: #FF3300; }
+        .hero-form-button {
+            background-color: #E6EDF3;
+            color: #0D1117;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .hero-form-button:hover { background-color: #cdd5dc; }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .modern-spinner { width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.2); border-top: 2px solid #0D1117; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        .float-animation { animation: float 5s ease-in-out infinite; }
+        
+        #hero-section {
+            background-image: url('https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        #hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(13, 17, 23, 0.7); 
+            z-index: 1;
+        }
+        #hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+         /* Estilos para setas do carrossel */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(22, 27, 34, 0.8);
+            color: white;
+            border: 1px solid #30363D;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.2s;
+        }
+        .carousel-arrow:hover { background-color: #161B22; }
+        .carousel-arrow.prev { left: -20px; }
+        .carousel-arrow.next { right: -20px; }
+    </style>
+</head>
+<body class="bg-custom-dark">
+    <!-- Header -->
+    <header class="bg-custom-card/80 backdrop-blur-lg sticky top-0 z-50 border-b border-custom">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center group">
+                    <i class="fas fa-map-marker-alt text-custom-yellow text-3xl mr-3"></i>
+                    <span class="text-2xl font-bold text-white">Sua Viagem <span class="text-custom-orange">Aqui</span></span>
+                </a>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#como-funciona" class="text-gray-300 hover:text-white font-medium transition-colors">Como Funciona</a>
+                    <a href="#planos" class="text-gray-300 hover:text-white font-medium transition-colors">Planos</a>
+                </nav>
+                <div id="login-container" class="flex items-center space-x-4 invisible">
+                    <div id="logged-out-buttons" class="flex items-center space-x-4">
+                        <a href="/cadastro.html" class="btn-custom-orange px-4 py-2 rounded-lg font-bold transition-all">
+                            Assine Já
+                        </a>
+                        <a href="/pagina-login.html" class="flex items-center btn-custom-blue px-4 py-2 rounded-lg font-bold transition-all">
+                            Login
+                        </a>
+                    </div>
+                    <div id="logged-in-button"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section id="hero-section" class="relative py-24 md:py-32 flex items-center justify-center">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+                    A plataforma definitiva para<br>
+                    <span class="text-custom-orange">agências de viagens</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-400 mb-10 max-w-3xl mx-auto">
+                    Eleve a experiência dos seus clientes com ferramentas exclusivas e acesso a parceiros premium.
+                </p>
+                <div id="search-section" class="max-w-5xl mx-auto">
+                    <div class="bg-custom-card/70 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-custom">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            <div class="lg:col-span-1">
+                                <label class="block text-left text-gray-300 text-sm font-semibold mb-2">Quero ir para!! :</label>
+                                <input type="text" id="destino-input" placeholder="Ex: Pousada Sol" class="hero-form-input">
+                            </div>
+                             <div class="lg:col-span-1">
+                                <label class="block text-left text-gray-300 text-sm font-semibold mb-2">Data da Viagem</label>
+                                <input type="date" id="data-input" class="hero-form-input" style="color-scheme: dark;">
+                            </div>
+                            <div class="lg:col-span-1">
+                                <label class="block text-left text-gray-300 text-sm font-semibold mb-2">Categoria</label>
+                                <select id="categoria-select" class="hero-form-select">
+                                    <option value="todos">Todas as Categorias</option>
+                                    <option value="agencias">Agências de Viagens</option>
+                                    <option value="camping">Camping</option>
+                                    <option value="guias">Guias de Turismo</option>
+                                    <option value="hospedagem">Hotéis e Pousadas</option>
+                                    <option value="restaurantes">Restaurantes</option>
+                                    <option value="padarias">Padarias e Cafeterias</option>
+                                    <option value="delicatessen">Delicatessen e Empórios</option>
+                                    <option value="lanchonetes">Lanchonetes e Bares</option>
+                                    <option value="sorveterias">Sorveterias e Açaí</option>
+                                    <option value="conveniencia">Lojas de Conveniência</option>
+                                    <option value="farmacias">Farmácias</option>
+                                    <option value="artesanato">Lojas de Artesanato</option>
+                                </select>
+                            </div>
+                            <div class="lg:col-span-1">
+                                <label class="block text-left text-gray-300 text-sm font-semibold mb-2">Cidade</label>
+                                <input type="text" id="cidade-input" placeholder="Ex: Ubatuba" class="hero-form-input">
+                            </div>
+                            <div class="lg:col-span-1">
+                                 <button id="search-btn" class="hero-form-button w-full">
+                                     <span id="search-text" class="flex items-center justify-center">
+                                         <i class="fas fa-search mr-2"></i>Buscar
+                                     </span>
+                                     <span id="search-loading" class="hidden items-center justify-center">
+                                         <div class="modern-spinner mr-2"></div>Buscando...
+                                     </span>
+                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weather Section -->
+        <section id="weather-section" class="pb-20">
+            <div id="weather-widget" class="container mx-auto max-w-lg bg-custom-card rounded-xl p-4 shadow-lg border border-custom flex items-center">
+                <div class="text-center text-gray-400 w-full">Carregando previsão do tempo...</div>
+            </div>
+        </section>
+
+        <!-- Como Funciona -->
+        <section id="como-funciona" class="py-20">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Como Funciona</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto mb-12">Conectamos viajantes a experiências únicas em 3 passos simples.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom">
+                        <i class="fas fa-search text-4xl text-custom-orange mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">1. Busque</h3>
+                        <p class="text-gray-400">Use os nossos filtros para encontrar exatamente o que precisa para a sua viagem.</p>
+                    </div>
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom">
+                        <i class="fas fa-handshake text-4xl text-custom-orange mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">2. Conecte-se</h3>
+                        <p class="text-gray-400">Entre em contacto direto com os melhores parceiros e agências do mercado.</p>
+                    </div>
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom">
+                        <i class="fas fa-plane-departure text-4xl text-custom-orange mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">3. Viaje</h3>
+                        <p class="text-gray-400">Negocie e planeie a sua viagem diretamente com o fornecedor, sem intermediários.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Nossas Agências Premium -->
+        <section id="agencias" class="py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Nossas Agências Premium</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto">Conheça alguns dos nossos parceiros de elite que confiam na nossa plataforma.</p>
+            </div>
+            <div class="relative max-w-6xl mx-auto">
+                <div class="overflow-hidden">
+                    <div id="agencies-carousel-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Slides de agências serão inseridos aqui -->
+                    </div>
+                </div>
+                 <button class="carousel-arrow prev" data-carousel="agencies"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-arrow next" data-carousel="agencies"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Carrossel de Parceiros Premium -->
+        <section id="parceiros-premium" class="py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Explore Nossos Parceiros Premium</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto">Experiências selecionadas para elevar a viagem dos seus clientes.</p>
+            </div>
+            <div class="relative max-w-6xl mx-auto">
+                <div class="overflow-hidden">
+                    <div id="partners-carousel-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Slides de parceiros premium serão inseridos aqui pelo JS -->
+                    </div>
+                </div>
+                 <button class="carousel-arrow prev" data-carousel="partners"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-arrow next" data-carousel="partners"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Mais Parceiros -->
+        <section id="mais-parceiros" class="py-20">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Mais Parceiros para seu Passeio</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto">Uma seleção de nossos parceiros para você descobrir.</p>
+            </div>
+            <div id="partners-grid" class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Cards de todos os parceiros serão inseridos aqui pelo JS -->
+            </div>
+        </section>
+
+        <!-- Guias de Turismo em Destaque -->
+        <section id="guias-destaque" class="py-20 bg-custom-card border-t border-b border-custom">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Guias de Turismo em Destaque</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto">Descubra roteiros incríveis com os nossos guias parceiros.</p>
+            </div>
+            <div class="relative max-w-6xl mx-auto">
+                <div class="overflow-hidden">
+                    <div id="guides-carousel-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Slides de guias de turismo serão inseridos aqui pelo JS -->
+                    </div>
+                </div>
+                <button class="carousel-arrow prev" data-carousel="guides"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-arrow next" data-carousel="guides"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Promoção de Lançamento para Guias -->
+        <section id="promo-guias" class="py-20">
+            <div class="container mx-auto px-4">
+                <div class="bg-gradient-to-r from-orange-600 to-yellow-500 rounded-xl p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-2">Atenção, Guias de Turismo!</h2>
+                        <p class="text-lg text-white max-w-2xl">Faça parte da nossa plataforma! Os primeiros 25 guias cadastrados no Plano Basic ganham <span class="font-bold">2 meses de assinatura grátis</span>.</p>
+                    </div>
+                    <a href="/cadastro.html" class="mt-6 md:mt-0 flex-shrink-0 bg-white text-orange-600 font-bold py-3 px-8 rounded-lg text-lg hover:bg-gray-200 transition-colors">
+                        Cadastre-se Já!
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ferramentas -->
+        <section id="ferramentas" class="py-20">
+            <div class="container mx-auto px-4 text-center">
+                <div class="inline-block bg-custom-card border border-custom rounded-full px-6 py-2 mb-4">
+                    <span class="text-custom-orange font-semibold text-sm">✨ FERRAMENTA EXCLUSIVA</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Construtor de Roteiros para Clientes</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto mb-12">Crie e personalize itinerários completos em minutos com a nossa IA.</p>
+                
+                <div class="max-w-4xl mx-auto bg-custom-card rounded-xl p-8 shadow-lg border border-custom">
+                    <div class="relative">
+                        <!-- Overlay de Acesso Negado -->
+                        <div id="ai-tool-lock-overlay" class="absolute inset-0 bg-custom-card/80 backdrop-blur-sm flex-col items-center justify-center rounded-lg z-10 flex">
+                            <i class="fas fa-lock text-4xl text-yellow-400 mb-4"></i>
+                            <h3 class="text-xl font-bold text-white">Funcionalidade Premium</h3>
+                            <p class="text-gray-400 mt-2 mb-4">Esta ferramenta está disponível para assinantes Plus e Anunciantes.</p>
+                            <a href="#planos" class="btn-custom-orange font-bold py-2 px-6 rounded-lg">Ver Planos</a>
+                        </div>
+                        
+                        <!-- Conteúdo da Ferramenta -->
+                        <div id="ai-tool-content" class="grid md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-6 text-left">Descreva o perfil do cliente e da viagem</h3>
+                                <div class="space-y-4 mb-6">
+                                    <textarea id="ai-prompt" rows="6" class="ai-textarea resize-none" placeholder="Ex: Casal em lua de mel, 10 dias na Itália. Buscam romance, gastronomia e passeios privativos. Orçamento elevado."></textarea>
+                                </div>
+                                <button id="generate-ai-btn" class="w-full btn-custom-orange font-bold py-3 rounded-lg transition">
+                                    <i class="fas fa-magic mr-2"></i>Criar Roteiro
+                                </button>
+                                <div id="ai-feedback-container" class="mt-4 text-sm"></div>
+                            </div>
+                            <div class="text-center hidden md:block">
+                                <div class="relative">
+                                    <img src="https://images.unsplash.com/photo-1611162617474-5b21e-879e-113?q=80&w=400&auto=format&fit=crop"
+                                         class="w-full max-w-xs mx-auto rounded-2xl shadow-xl float-animation" alt="Representação visual de IA">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="ai-result-container" class="mt-6 text-left text-gray-300">
+                        <!-- O resultado do roteiro aparecerá aqui -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Planos de Assinatura -->
+        <section id="planos" class="py-20 bg-custom-card border-t border-b border-custom">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Planos de Assinatura para Parceiros</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto mb-12">Escolha o plano ideal para divulgar o seu negócio e alcançar mais viajantes.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Plano Basic -->
+                    <div class="bg-gray-800 rounded-xl p-8 border-2 border-custom flex flex-col card-hover">
+                        <h3 class="text-2xl font-bold text-custom-orange">Basic</h3>
+                        <p class="text-gray-400 mt-2 flex-grow">Ideal para guias de turismo e pequenos negócios.</p>
+                        <div class="text-4xl font-bold text-white my-6">R$ 99<span class="text-lg font-normal text-gray-400">/mês</span></div>
+                        <ul class="space-y-3 text-gray-300 text-left">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Perfil Básico na plataforma</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 5 fotos na galeria</li>
+                        </ul>
+                        <a href="/cadastro.html" class="mt-8 w-full block text-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</a>
+                    </div>
+                    <!-- Plano Plus -->
+                    <div class="bg-gray-800 rounded-xl p-8 border-2 border-custom-orange relative flex flex-col card-hover">
+                        <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-custom-orange text-white px-4 py-1 rounded-full text-sm font-bold">MAIS POPULAR</div>
+                        <h3 class="text-2xl font-bold text-custom-orange">Plus</h3>
+                        <p class="text-gray-400 mt-2 flex-grow">Perfeito para pousadas e restaurantes.</p>
+                        <div class="text-4xl font-bold text-white my-6">R$ 199<span class="text-lg font-normal text-gray-400">/mês</span></div>
+                        <ul class="space-y-3 text-gray-300 text-left">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Tudo do plano Basic</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 20 fotos e 1 vídeo</li>
+                        </ul>
+                        <a href="/cadastro.html" class="mt-8 w-full block text-center btn-custom-orange font-bold py-3 rounded-lg transition">Assine Agora</a>
+                    </div>
+                    <!-- Plano Advance -->
+                    <div class="bg-gray-800 rounded-xl p-8 border-2 border-custom flex flex-col card-hover">
+                        <h3 class="text-2xl font-bold text-custom-orange">Advance</h3>
+                        <p class="text-gray-400 mt-2 flex-grow">Para hotéis e grandes operadores.</p>
+                        <div class="text-4xl font-bold text-white my-6">R$ 399<span class="text-lg font-normal text-gray-400">/mês</span></div>
+                        <ul class="space-y-3 text-gray-300 text-left">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Tudo do plano Plus</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 5 vídeos na galeria</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Destaque na página principal</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Relatórios de desempenho</li>
+                        </ul>
+                        <a href="/cadastro.html" class="mt-8 w-full block text-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Depoimentos -->
+        <section id="depoimentos" class="py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">O Que Dizem Sobre Nós</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto">Experiências reais de parceiros e viajantes que confiam na nossa plataforma.</p>
+            </div>
+            <div class="relative max-w-4xl mx-auto">
+                <div class="overflow-hidden">
+                    <div id="testimonials-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Depoimentos serão inseridos aqui pelo JS -->
+                    </div>
+                </div>
+                <button class="carousel-arrow prev" data-carousel="testimonials"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-arrow next" data-carousel="testimonials"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Comunidade -->
+        <section id="comunidade" class="py-20">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Junte-se à Nossa Comunidade</h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto mb-12">Conecte-se, receba dicas e fique por dentro das novidades nos nossos grupos exclusivos.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom text-center card-hover">
+                        <i class="fab fa-telegram text-5xl text-blue-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">SVA | Alertas de Viagem</h3>
+                        <p class="text-gray-400 mt-2 mb-4">Receba as melhores ofertas e alertas de pacotes diretamente no seu Telegram.</p>
+                        <a href="#" class="btn-telegram font-bold py-3 px-6 rounded-lg transition-opacity hover:opacity-90">Entrar no Grupo</a>
+                    </div>
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom text-center card-hover">
+                        <i class="fab fa-whatsapp text-5xl text-green-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">Parceiros de Sucesso SVA</h3>
+                        <p class="text-gray-400 mt-2 mb-4">Grupo exclusivo para anunciantes trocarem experiências e receberem dicas.</p>
+                        <a href="#" class="btn-whatsapp font-bold py-3 px-6 rounded-lg transition-opacity hover:opacity-90">Entrar no Grupo</a>
+                    </div>
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom text-center card-hover">
+                        <i class="fab fa-whatsapp text-5xl text-green-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">Exploradores SVA</h3>
+                        <p class="text-gray-400 mt-2 mb-4">Para viajantes que amam compartilhar dicas, fotos e histórias das suas aventuras.</p>
+                        <a href="#" class="btn-whatsapp font-bold py-3 px-6 rounded-lg transition-opacity hover:opacity-90">Entrar no Grupo</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- Resultados da Busca (escondido por padrão) -->
+    <section id="search-results-section" class="hidden py-20">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white">Resultados da Busca</h2>
+                <button id="clear-search-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-5 rounded-lg transition">
+                    <i class="fas fa-times mr-2"></i>Limpar Busca
+                </button>
+            </div>
+            <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Cards de resultados serão inseridos aqui -->
+            </div>
+            <div id="no-results-message" class="hidden text-center py-16">
+                <i class="fas fa-exclamation-circle text-5xl text-custom-orange mb-4"></i>
+                <h3 class="text-2xl font-bold text-white">Nenhum resultado encontrado</h3>
+                <p class="text-gray-400 mt-2">Tente ajustar os seus filtros de busca.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-custom-card border-t border-custom">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4">Sua Viagem Aqui</h3>
+                    <p class="text-gray-400 text-sm">A plataforma definitiva para agências de viagens e parceiros premium.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4">Links Rápidos</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Sobre Nós</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Condições de Uso</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Política de Privacidade</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Código de Conduta</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4">Siga-nos</h3>
+                    <div class="flex space-x-4 justify-center md:justify-start">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-tiktok fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-custom pt-4 text-center text-sm text-gray-500">
+                <p>&copy; 2025 Sua Viagem Aqui. Todos os direitos reservados.</p>
+                <p class="mt-1">A plataforma atua como intermediadora. A negociação é direta com o fornecedor.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts do Firebase e Lógica da Página -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+  apiKey: "AIzaSyAR3cjd3d4Bnzhv-iai20yeEVBSzu5k1Qo",
+  authDomain: "sua-viagem-aqui-v2.firebaseapp.com",
+  projectId: "sua-viagem-aqui-v2",
+  storageBucket: "sua-viagem-aqui-v2.appspot.com",
+  messagingSenderId: "508306740983",
+  appId: "1:508306740983:web:c1ce3824d51e098416a5f2",
+  measurementId: "G-FZKQ66PXFH"
+};
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            const functions = getFunctions(app, 'southamerica-east1');
+            const ADMIN_EMAIL = "suaviagemaqui.adm@gmail.com";
+            // Lista de IDs de administradores para acesso garantido.
+            const SUPER_ADMIN_UIDS = ["CvRLIc81hgX22SQsP93YZNj4xhi1", "YLJNed4iETgnI87z8WOLmOkgGjD3"];
+
+            // --- LÓGICA DO CABEÇALHO ---
+            const loginContainer = document.getElementById('login-container');
+            const loggedOutButtons = document.getElementById('logged-out-buttons');
+            const loggedInButton = document.getElementById('logged-in-button');
+            const aiToolLockOverlay = document.getElementById('ai-tool-lock-overlay');
+            const generateAiBtn = document.getElementById('generate-ai-btn');
+
+            function handleAIAccess(user, userData) {
+                const isSuperAdmin = user && SUPER_ADMIN_UIDS.includes(user.uid);
+                const isAdminByRole = userData && userData.accountType === 'admin';
+                const isAdminByEmail = user && user.email === ADMIN_EMAIL;
+                
+                const allowedAccountTypes = ['viajante-plus', 'anunciante'];
+                const hasPlanAccess = userData && allowedAccountTypes.includes(userData.accountType);
+
+                if (isSuperAdmin || isAdminByRole || isAdminByEmail || hasPlanAccess) {
+                    aiToolLockOverlay.classList.add('hidden');
+                    aiToolLockOverlay.classList.remove('flex');
+                } else {
+                    aiToolLockOverlay.classList.remove('hidden');
+                    aiToolLockOverlay.classList.add('flex');
+                }
+            }
+
+            onAuthStateChanged(auth, user => {
+                loginContainer.classList.remove('invisible');
+                if (user) {
+                    const q = query(collection(db, "users"), where("uid", "==", user.uid));
+                    getDocs(q).then(snapshot => {
+                        const userData = snapshot.docs[0]?.data();
+                        
+                        // Verifica se o usuário é administrador por qualquer um dos critérios
+                        const isSuperAdmin = SUPER_ADMIN_UIDS.includes(user.uid);
+                        const isAdminByRole = userData?.accountType === 'admin';
+                        const isAdminByEmail = user.email === ADMIN_EMAIL;
+                        
+                        const targetUrl = (isSuperAdmin || isAdminByRole || isAdminByEmail) ? '/admin.html' : '/dashboard.html';
+                        
+                        loggedInButton.innerHTML = `<a href="${targetUrl}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all"><i class="fas fa-user-shield mr-2"></i> Meu Painel</a>`;
+                        loggedOutButtons.classList.add('hidden');
+                        handleAIAccess(user, userData);
+                    });
+                } else {
+                    loggedInButton.innerHTML = '';
+                    loggedOutButtons.classList.remove('hidden');
+                    handleAIAccess(null, null);
+                }
+            });
+            
+            generateAiBtn.addEventListener('click', () => {
+                const prompt = document.getElementById('ai-prompt').value;
+                const feedbackContainer = document.getElementById('ai-feedback-container');
+                const resultContainer = document.getElementById('ai-result-container');
+                
+                if (!prompt.trim()) {
+                    feedbackContainer.innerHTML = `<p class="text-red-500">Por favor, descreva a viagem desejada.</p>`;
+                    return;
+                }
+
+                feedbackContainer.innerHTML = `<p class="text-blue-400">A gerar roteiro... Por favor, aguarde.</p>`;
+                resultContainer.innerHTML = '';
+
+                setTimeout(() => {
+                    feedbackContainer.innerHTML = '';
+                    resultContainer.innerHTML = `
+                        <h4 class="text-xl font-bold text-white mb-4">Roteiro Sugerido:</h4>
+                        <div class="prose prose-invert max-w-none text-gray-300">
+                            <p><strong>Dia 1: Chegada a Roma</strong><br>Check-in no hotel, passeio pelo bairro de Trastevere e jantar romântico.</p>
+                            <p><strong>Dia 2: Roma Antiga</strong><br>Visita guiada privada ao Coliseu, Fórum Romano e Monte Palatino.</p>
+                            <p>...</p>
+                            <p><em>Este é um roteiro de exemplo gerado pela nossa IA. A integração real com a API da Gemini será implementada em breve.</em></p>
+                        </div>
+                    `;
+                }, 2500);
+            });
+
+
+            // --- LÓGICA DA BUSCA ---
+            const searchBtn = document.getElementById('search-btn');
+            const mainContent = document.getElementById('main-content');
+            const searchResultsSection = document.getElementById('search-results-section');
+            const searchResultsGrid = document.getElementById('search-results-grid');
+            const noResultsMessage = document.getElementById('no-results-message');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const cidadeInput = document.getElementById('cidade-input');
+
+            let allPartnersData = []; 
+
+            async function performSearch() {
+                const searchText = document.getElementById('search-text');
+                const searchLoading = document.getElementById('search-loading');
+                searchText.classList.add('hidden');
+                searchLoading.classList.remove('hidden');
+
+                try {
+                    if (allPartnersData.length === 0) {
+                        const partnersRef = collection(db, "partners");
+                        const q = query(partnersRef, where("status", "==", "aprovado"));
+                        const querySnapshot = await getDocs(q);
+                        querySnapshot.forEach(doc => allPartnersData.push({ id: doc.id, ...doc.data() }));
+                    }
+
+                    const categoria = document.getElementById('categoria-select').value;
+                    const cidade = cidadeInput.value.toLowerCase().trim();
+                    const destino = document.getElementById('destino-input').value.toLowerCase().trim();
+
+                    const results = allPartnersData.filter(partner => {
+                        const matchCategoria = (categoria === 'todos') || (partner.category === categoria);
+                        const matchCidade = (cidade === '') || (partner.city && partner.city.toLowerCase().includes(cidade));
+                        const matchDestino = (destino === '') || (partner.businessName && partner.businessName.toLowerCase().includes(destino));
+                        return matchCategoria && matchCidade && matchDestino;
+                    });
+
+                    searchResultsGrid.innerHTML = '';
+
+                    if (results.length > 0) {
+                        noResultsMessage.classList.add('hidden');
+                        results.forEach(partner => {
+                            const card = createPartnerCard(partner);
+                            searchResultsGrid.appendChild(card);
+                        });
+                    } else {
+                        noResultsMessage.classList.remove('hidden');
+                    }
+
+                    mainContent.classList.add('hidden');
+                    searchResultsSection.classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                } catch (error) {
+                    console.error("Erro ao buscar parceiros:", error);
+                } finally {
+                    searchText.classList.remove('hidden');
+                    searchLoading.classList.add('hidden');
+                }
+            }
+
+            searchBtn.addEventListener('click', performSearch);
+             cidadeInput.addEventListener('change', () => {
+                const selectedCity = cidadeInput.value.trim();
+                fetchWeather(selectedCity);
+            });
+
+
+            clearSearchBtn.addEventListener('click', () => {
+                searchResultsSection.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                document.getElementById('destino-input').value = '';
+                cidadeInput.value = '';
+                document.getElementById('categoria-select').value = 'todos';
+                fetchWeather(); // Volta para a previsão do tempo padrão
+            });
+
+
+            // --- FUNÇÃO PARA PREVISÃO DO TEMPO ---
+            async function fetchWeather(city = 'Jacareí') {
+                const weatherWidget = document.getElementById('weather-widget');
+                if (!weatherWidget) return;
+
+                weatherWidget.innerHTML = `<div class="text-center text-gray-400 w-full">A carregar previsão para ${city}...</div>`;
+
+                const apiKey = '4aca8ed45a812c51abf30f11175f732d';
+                const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
+                
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Cidade não encontrada ou erro na rede.');
+                    const data = await response.json();
+                    
+                    const dailyForecasts = Object.values(data.list.reduce((acc, forecast) => {
+                        const date = new Date(forecast.dt * 1000).toLocaleDateString('pt-BR');
+                        if (!acc[date]) acc[date] = forecast;
+                        return acc;
+                    }, {}));
+
+                    if (dailyForecasts.length === 0) throw new Error('Não há dados de previsão.');
+
+                    const today = dailyForecasts[0];
+                    let forecastHTML = `<div class="flex items-center space-x-4 flex-1 pr-4 border-r border-custom"><i class="fas ${getWeatherIcon(today.weather[0].id)} text-4xl text-custom-yellow"></i><div><p class="text-lg font-semibold text-white">${data.city.name}</p><p class="text-3xl font-bold text-white">${Math.round(today.main.temp)}°C</p></div></div><div class="pl-4 flex space-x-4">`;
+                    dailyForecasts.slice(1, 3).forEach(day => {
+                        forecastHTML += `<div class="text-center"><p class="font-semibold text-white capitalize">${new Date(day.dt * 1000).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</p><i class="fas ${getWeatherIcon(day.weather[0].id)} text-2xl text-gray-400 my-1"></i><p class="font-bold text-white">${Math.round(day.main.temp)}°</p></div>`;
+                    });
+                    forecastHTML += `</div>`;
+                    weatherWidget.innerHTML = forecastHTML;
+                } catch (error) {
+                    weatherWidget.innerHTML = `<p class="w-full text-center text-sm text-gray-500">Previsão indisponível para ${city}.</p>`;
+                }
+            }
+
+            function getWeatherIcon(weatherId) {
+                if (weatherId < 300) return 'fa-bolt';
+                if (weatherId < 600) return 'fa-cloud-rain';
+                if (weatherId < 700) return 'fa-snowflake';
+                if (weatherId < 800) return 'fa-smog';
+                if (weatherId === 800) return 'fa-sun';
+                return 'fa-cloud';
+            }
+
+            // --- FUNÇÃO PARA CARREGAR CONTEÚDO DINÂMICO ---
+            onSnapshot(query(collection(db, "partners"), where("status", "==", "aprovado")), (snapshot) => {
+                allPartnersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allPartnersData.sort(() => 0.5 - Math.random());
+                populateCarouselsAndGrids();
+            });
+            
+            function populateCarouselsAndGrids() {
+                const partnersGrid = document.getElementById('partners-grid');
+                const agenciesCarouselTrack = document.getElementById('agencies-carousel-track');
+                const partnersCarouselTrack = document.getElementById('partners-carousel-track');
+                const guidesCarouselTrack = document.getElementById('guides-carousel-track');
+                const testimonialsTrack = document.getElementById('testimonials-track');
+
+
+                if (partnersGrid) partnersGrid.innerHTML = '';
+                if (agenciesCarouselTrack) agenciesCarouselTrack.innerHTML = '';
+                if (partnersCarouselTrack) partnersCarouselTrack.innerHTML = '';
+                if (guidesCarouselTrack) guidesCarouselTrack.innerHTML = '';
+                if (testimonialsTrack) testimonialsTrack.innerHTML = '';
+
+
+                const agencies = allPartnersData.filter(p => p.category === 'agencias');
+                const guides = allPartnersData.filter(p => p.category === 'guias');
+                const premiumPartners = allPartnersData.slice(0, 12); 
+
+                agencies.forEach(partner => agenciesCarouselTrack?.appendChild(createPartnerCarouselCard(partner, 'agencies')));
+                premiumPartners.forEach(partner => partnersCarouselTrack?.appendChild(createPartnerCarouselCard(partner, 'partners')));
+                allPartnersData.forEach(partner => partnersGrid?.appendChild(createPartnerCard(partner)));
+
+                if (guides.length > 0) {
+                    document.getElementById('guias-destaque')?.classList.remove('hidden');
+                    guides.forEach(guide => guidesCarouselTrack?.appendChild(createPartnerCarouselCard(guide, 'guides')));
+                } else {
+                    document.getElementById('guias-destaque')?.classList.add('hidden');
+                }
+                
+                 // --- Dados Mock para Depoimentos ---
+                const mockTestimonials = [
+                    {
+                        quote: "A plataforma Sua Viagem Aqui revolucionou a forma como encontramos parceiros. A visibilidade que ganhamos é incrível!",
+                        author: "Ana Clara, Agência Voe Longe",
+                        avatar: "https://i.pravatar.cc/150?img=1"
+                    },
+                    {
+                        quote: "Como guia de turismo, ter meu perfil aqui me conectou com agências que eu nunca alcançaria sozinho. Recomendo!",
+                        author: "Marcos Vianna, Guia em Bonito-MS",
+                        avatar: "https://i.pravatar.cc/150?img=3"
+                    },
+                     {
+                        quote: "Nossa pousada teve um aumento de 30% nas reservas diretas após anunciarmos no Sua Viagem Aqui. Essencial!",
+                        author: "Juliana Costa, Pousada Mar Aberto",
+                        avatar: "https://i.pravatar.cc/150?img=5"
+                    }
+                ];
+
+                mockTestimonials.forEach(testimonial => {
+                    testimonialsTrack.appendChild(createTestimonialCard(testimonial));
+                });
+                
+                // Inicializa todos os carrosséis
+                setupCarousel('agencies');
+                setupCarousel('partners');
+                setupCarousel('guides');
+                setupCarousel('testimonials');
+
+            }
+            
+             function createTestimonialCard(testimonial) {
+                const slide = document.createElement('div');
+                slide.className = 'flex-none w-full p-4';
+                slide.innerHTML = `
+                    <div class="bg-custom-card p-8 rounded-xl border border-custom h-full text-center">
+                        <img src="${testimonial.avatar}" class="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-custom-orange">
+                        <p class="text-gray-400 italic">"${testimonial.quote}"</p>
+                        <h4 class="text-white font-bold mt-4">- ${testimonial.author}</h4>
+                    </div>
+                `;
+                return slide;
+            }
+
+
+            function createPartnerCard(partner) {
+                const card = document.createElement('div');
+                card.className = 'bg-custom-card rounded-xl overflow-hidden flex flex-col card-hover border border-custom';
+                const imageUrl = (partner.galleryImages && partner.galleryImages[0]?.url) || partner.coverImageUrl || 'https://placehold.co/400x300/0d1117/e6edf3?text=Perfil';
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${partner.businessName}" class="w-full h-48 object-cover">
+                    <div class="p-4 flex-grow flex flex-col">
+                        <h3 class="text-lg font-bold text-white">${partner.businessName}</h3>
+                        <p class="text-sm text-custom-orange capitalize">${partner.category || 'Categoria'}</p>
+                        <p class="text-gray-400 text-sm mt-2 flex-grow">${(partner.description || '').substring(0, 80)}...</p>
+                        <a href="/perfil-parceiro.html?id=${partner.id}" class="mt-4 text-center font-semibold text-white bg-orange-600/50 hover:bg-orange-600/80 py-2 rounded-lg transition-colors">Ver Perfil</a>
+                    </div>`;
+                return card;
+            }
+
+            function createPartnerCarouselCard(partner, carouselId) {
+                const slide = document.createElement('div');
+                // O carrossel de depoimentos tem um slide por vez
+                 const widthClass = carouselId === 'testimonials' ? 'w-full' : 'w-full sm:w-1/2 md:w-1/3 lg:w-1/4';
+                slide.className = `flex-none ${widthClass} p-3`;
+                const imageUrl = (partner.galleryImages && partner.galleryImages[0]?.url) || partner.coverImageUrl || 'https://placehold.co/400x300/0d1117/e6edf3?text=Perfil';
+                slide.innerHTML = `
+                    <a href="/perfil-parceiro.html?id=${partner.id}" class="block h-full">
+                        <div class="bg-custom-card rounded-xl overflow-hidden h-full flex flex-col card-hover border-custom">
+                            <img src="${imageUrl}" class="w-full h-48 object-cover">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold text-white truncate">${partner.businessName}</h3>
+                                <p class="text-sm text-gray-400 capitalize">${partner.category}</p>
+                            </div>
+                        </div>
+                    </a>`;
+                return slide;
+            }
+            
+            function setupCarousel(carouselId) {
+                const track = document.getElementById(`${carouselId}-carousel-track`);
+                if (!track) return;
+
+                const slides = Array.from(track.children);
+                const nextButton = document.querySelector(`.next[data-carousel="${carouselId}"]`);
+                const prevButton = document.querySelector(`.prev[data-carousel="${carouselId}"]`);
+
+                if (slides.length === 0 || !nextButton || !prevButton) return;
+
+                let slideWidth = slides[0].getBoundingClientRect().width;
+                let currentIndex = 0;
+
+                const setSlidePosition = (slide, index) => {
+                    slide.style.left = slideWidth * index + 'px';
+                };
+                // slides.forEach(setSlidePosition); // Não é mais necessário com flexbox
+
+                const moveToSlide = (targetIndex) => {
+                    if (targetIndex < 0) targetIndex = slides.length - 1;
+                    if (targetIndex >= slides.length) targetIndex = 0;
+                    
+                    track.style.transform = 'translateX(-' + slideWidth * targetIndex + 'px)';
+                    currentIndex = targetIndex;
+                };
+
+                prevButton.addEventListener('click', e => {
+                    moveToSlide(currentIndex - 1);
+                });
+
+                nextButton.addEventListener('click', e => {
+                    moveToSlide(currentIndex + 1);
+                });
+                
+                // Recalcular em redimensionamento
+                 window.addEventListener('resize', () => {
+                    slideWidth = slides[0].getBoundingClientRect().width;
+                    moveToSlide(currentIndex);
+                });
+            }
+
+
+            fetchWeather();
+        });
+    </script>
+</body>
+</html>
+

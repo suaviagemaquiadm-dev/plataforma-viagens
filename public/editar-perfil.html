@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil - Sua Viagem Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0D1117;
+            color: #E6EDF3; 
+        }
+        .bg-custom-card { background-color: #161B22; }
+        .border-custom { border-color: #30363D; }
+        .form-input {
+            background-color: #010409;
+            border: 1px solid #30363D;
+            color: #E6EDF3;
+            border-radius: 6px;
+            padding: 10px 12px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #FF3300;
+        }
+        .form-input:disabled {
+            background-color: #0d1117;
+            cursor: not-allowed;
+        }
+        .btn-submit {
+            background-color: #FF3300;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background-color: #ff5533;
+        }
+        .btn-submit:disabled {
+            background-color: #ff33008a;
+            cursor: not-allowed;
+        }
+        #page-content { display: none; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Indicador de Carregamento -->
+    <div id="loader" class="flex items-center justify-center min-h-screen">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-orange-500"></i>
+            <p class="mt-4 text-lg">A carregar perfil...</p>
+        </div>
+    </div>
+
+    <!-- Conteúdo da Página (inicialmente escondido) -->
+    <div id="page-content">
+        <header class="bg-custom-card/80 backdrop-blur-lg sticky top-0 z-50 border-b border-custom">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <a href="/" class="flex items-center group">
+                    <i class="fas fa-map-marker-alt text-yellow-400 text-2xl mr-3"></i>
+                    <span class="text-xl font-bold text-white">Sua Viagem <span class="text-orange-500">Aqui</span></span>
+                </a>
+                <div class="flex items-center space-x-4">
+                     <a href="/dashboard.html" class="text-gray-300 hover:text-white font-medium transition-colors">Voltar ao Painel</a>
+                </div>
+            </div>
+        </header>
+        
+        <main class="container mx-auto p-8 flex justify-center">
+            <div class="w-full max-w-2xl">
+                <h1 class="text-3xl font-bold text-white mb-8">Editar Perfil</h1>
+
+                <div class="bg-custom-card border border-custom rounded-lg p-8">
+                    <form id="edit-profile-form">
+                        <div class="mb-4">
+                            <label for="fullName" class="block text-gray-300 text-sm font-medium mb-2">Nome Completo</label>
+                            <input type="text" id="fullName" class="form-input" autocomplete="name" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="email" class="block text-gray-300 text-sm font-medium mb-2">E-mail (não pode ser alterado)</label>
+                            <input type="email" id="email" class="form-input" autocomplete="email" disabled>
+                        </div>
+
+                        <div id="feedback-message" class="hidden text-sm rounded-lg p-3 mb-4 text-center">
+                            <!-- Mensagem de feedback aparecerá aqui -->
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn-submit w-full">
+                            Guardar Alterações
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAR3cjd3d4Bnzhv-iai20yeEVBSzu5k1Qo",
+          authDomain: "sua-viagem-aqui-v2.firebaseapp.com",
+          projectId: "sua-viagem-aqui-v2",
+          storageBucket: "sua-viagem-aqui-v2.appspot.com",
+          messagingSenderId: "508306740983",
+          appId: "1:508306740983:web:c1ce3d41e098416a5f2",
+          measurementId: "G-FZKQ66PXFH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loader = document.getElementById('loader');
+        const pageContent = document.getElementById('page-content');
+        const editProfileForm = document.getElementById('edit-profile-form');
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const submitBtn = document.getElementById('submit-btn');
+        const feedbackMessageDiv = document.getElementById('feedback-message');
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // Utilizador está logado, busca os dados
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    fullNameInput.value = userData.fullName || '';
+                    emailInput.value = userData.email || '';
+                }
+
+                // Mostra o conteúdo da página
+                loader.style.display = 'none';
+                pageContent.style.display = 'block';
+
+            } else {
+                // Utilizador não está logado, redireciona
+                window.location.href = '/pagina-login.html';
+            }
+        });
+
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const newFullName = fullNameInput.value.trim();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'A guardar...';
+            feedbackMessageDiv.classList.add('hidden');
+
+            try {
+                const userDocRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userDocRef, {
+                    fullName: newFullName
+                });
+
+                // Mostra feedback de sucesso
+                feedbackMessageDiv.textContent = 'Perfil atualizado com sucesso!';
+                feedbackMessageDiv.className = 'block bg-green-800 border border-green-700 text-white text-sm rounded-lg p-3 mb-4 text-center';
+                feedbackMessageDiv.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Erro ao atualizar perfil:", error);
+                 // Mostra feedback de erro
+                feedbackMessageDiv.textContent = 'Ocorreu um erro ao guardar. Tente novamente.';
+                feedbackMessageDiv.className = 'block bg-red-800 border border-red-700 text-white text-sm rounded-lg p-3 mb-4 text-center';
+                feedbackMessageDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar Alterações';
+            }
+        });
+    </script>
+</body>
+</html>
+

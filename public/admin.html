@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador - Sua Viagem Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0D1117;
+            color: #E6EDF3; 
+        }
+        .bg-custom-card { background-color: #161B22; }
+        .border-custom { border-color: #30363D; }
+        #page-content { display: none; }
+        .table-header { background-color: #010409; }
+        .table-row:nth-child(even) { background-color: #161B22; }
+        .table-row:nth-child(odd) { background-color: #1a2029; }
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-approve { background-color: #238636; color: white; }
+        .btn-approve:hover { background-color: #2ea043; }
+        .btn-reject { background-color: #da3633; color: white; }
+        .btn-reject:hover { background-color: #f85149; }
+        .btn-details { background-color: #2f81f7; color: white; }
+        .btn-details:hover { background-color: #4b8ff7; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Indicador de Carregamento -->
+    <div id="loader" class="flex items-center justify-center min-h-screen">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-orange-500"></i>
+            <p class="mt-4 text-lg">A verificar permissões...</p>
+        </div>
+    </div>
+
+    <!-- Conteúdo da Página (inicialmente escondido) -->
+    <div id="page-content">
+        <header class="bg-custom-card/80 backdrop-blur-lg sticky top-0 z-50 border-b border-custom">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <a href="/" class="flex items-center group">
+                    <i class="fas fa-shield-alt text-yellow-400 text-2xl mr-3"></i>
+                    <span class="text-xl font-bold text-white">Painel <span class="text-orange-500">Admin</span></span>
+                </a>
+                <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                </button>
+            </div>
+        </header>
+        
+        <main class="container mx-auto p-4 md:p-8">
+            <h1 class="text-3xl font-bold text-white mb-8">Gestão de Parceiros</h1>
+
+            <!-- Secção de Parceiros Pendentes -->
+            <section id="pending-partners">
+                <h2 class="text-2xl font-semibold text-orange-500 mb-4 border-b-2 border-custom pb-2">Aguardando Aprovação</h2>
+                <div id="pending-list" class="overflow-x-auto">
+                    <!-- A lista de parceiros pendentes será inserida aqui -->
+                </div>
+            </section>
+
+            <!-- Secção de Parceiros Aprovados -->
+            <section id="approved-partners" class="mt-12">
+                <h2 class="text-2xl font-semibold text-green-500 mb-4 border-b-2 border-custom pb-2">Parceiros Aprovados</h2>
+                <div id="approved-list" class="overflow-x-auto">
+                    <!-- A lista de parceiros aprovados será inserida aqui -->
+                </div>
+            </section>
+            
+             <!-- Secção de Parceiros Reprovados -->
+            <section id="rejected-partners" class="mt-12">
+                <h2 class="text-2xl font-semibold text-red-500 mb-4 border-b-2 border-custom pb-2">Parceiros Reprovados</h2>
+                <div id="rejected-list" class="overflow-x-auto">
+                    <!-- A lista de parceiros reprovados será inserida aqui -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal de Detalhes do Parceiro -->
+    <div id="details-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-custom-card rounded-lg border border-custom w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-custom sticky top-0 bg-custom-card">
+                <h3 id="modal-title" class="text-xl font-bold text-white">Detalhes do Parceiro</h3>
+                <button id="modal-close-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto">
+                <!-- Detalhes serão inseridos aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, getDocs, query, where, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAR3cjd3d4Bnzhv-iai20yeEVBSzu5k1Qo",
+          authDomain: "sua-viagem-aqui-v2.firebaseapp.com",
+          projectId: "sua-viagem-aqui-v2",
+          storageBucket: "sua-viagem-aqui-v2.appspot.com",
+          messagingSenderId: "508306740983",
+          appId: "1:508306740983:web:c1ce3d41e098416a5f2",
+          measurementId: "G-FZKQ66PXFH"
+        };
+        
+        const SUPER_ADMIN_UIDS = ["CvRLIc81hgX22SQsP93YZNj4xhi1", "YLJNed4iETgnI87z8WOLmOkgGjD3"];
+        const ADMIN_EMAIL = "suaviagemaqui.adm@gmail.com";
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loader = document.getElementById('loader');
+        const pageContent = document.getElementById('page-content');
+        const logoutBtn = document.getElementById('logout-btn');
+        const detailsModal = document.getElementById('details-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        let allPartners = []; // Cache local de parceiros
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDocs(query(collection(db, "users"), where("uid", "==", user.uid)));
+                const userData = userDoc.docs[0]?.data();
+                
+                const isSuperAdmin = SUPER_ADMIN_UIDS.includes(user.uid);
+                const isAdminByRole = userData?.accountType === 'admin';
+                const isAdminByEmail = user.email === ADMIN_EMAIL;
+
+                if (isSuperAdmin || isAdminByRole || isAdminByEmail) {
+                    loader.style.display = 'none';
+                    pageContent.style.display = 'block';
+                    loadPartners();
+                } else {
+                    window.location.href = '/dashboard.html';
+                }
+            } else {
+                window.location.href = '/pagina-login.html';
+            }
+        });
+        
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => { window.location.href = '/'; });
+        });
+        
+        modalCloseBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
+
+        function loadPartners() {
+            const partnersRef = collection(db, "partners");
+            onSnapshot(partnersRef, (snapshot) => {
+                allPartners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPartners(allPartners);
+            });
+        }
+        
+        function renderPartners(partners) {
+            const pending = partners.filter(p => p.status === 'pendente');
+            const approved = partners.filter(p => p.status === 'aprovado');
+            const rejected = partners.filter(p => p.status === 'reprovado');
+
+            document.getElementById('pending-list').innerHTML = createTable(pending);
+            document.getElementById('approved-list').innerHTML = createTable(approved);
+            document.getElementById('rejected-list').innerHTML = createTable(rejected);
+            
+            addEventListenersToButtons();
+        }
+
+        function createTable(data) {
+            if (data.length === 0) {
+                return '<p class="text-gray-400 p-4">Nenhum parceiro nesta categoria.</p>';
+            }
+            
+            const isPending = data[0]?.status === 'pendente';
+            
+            let tableHTML = `
+                <table class="w-full text-sm text-left text-gray-300">
+                    <thead class="text-xs text-gray-400 uppercase table-header">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Nome do Negócio</th>
+                            <th scope="col" class="px-6 py-3">Categoria</th>
+                            <th scope="col" class="px-6 py-3">Cidade</th>
+                            <th scope="col" class="px-6 py-3 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            data.forEach(item => {
+                tableHTML += `
+                    <tr class="table-row">
+                        <td class="px-6 py-4 font-medium text-white">${item.businessName}</td>
+                        <td class="px-6 py-4 capitalize">${item.category}</td>
+                        <td class="px-6 py-4">${item.city}</td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <button class="btn-action btn-details" data-id="${item.id}">Ver Detalhes</button>
+                            ${isPending ? `
+                            <button class="btn-action btn-approve" data-id="${item.id}">Aprovar</button>
+                            <button class="btn-action btn-reject" data-id="${item.id}">Reprovar</button>
+                            ` : ''}
+                        </td>
+                    </tr>`;
+            });
+
+            tableHTML += '</tbody></table>';
+            return tableHTML;
+        }
+        
+        function addEventListenersToButtons() {
+            document.querySelectorAll('.btn-approve').forEach(button => {
+                button.addEventListener('click', (e) => updatePartnerStatus(e.target.dataset.id, 'aprovado'));
+            });
+            document.querySelectorAll('.btn-reject').forEach(button => {
+                button.addEventListener('click', (e) => updatePartnerStatus(e.target.dataset.id, 'reprovado'));
+            });
+            document.querySelectorAll('.btn-details').forEach(button => {
+                button.addEventListener('click', (e) => openDetailsModal(e.target.dataset.id));
+            });
+        }
+        
+        async function updatePartnerStatus(id, newStatus) {
+            const partnerRef = doc(db, "partners", id);
+            try {
+                await updateDoc(partnerRef, { status: newStatus });
+            } catch (error) {
+                console.error("Erro ao atualizar parceiro: ", error);
+            }
+        }
+        
+        function openDetailsModal(id) {
+            const partner = allPartners.find(p => p.id === id);
+            if (!partner) return;
+
+            modalTitle.textContent = `Detalhes de ${partner.businessName}`;
+            
+            let detailsHTML = '<dl class="divide-y divide-gray-700">';
+            const fields = {
+                'ID do Parceiro': partner.id,
+                'Nome do Responsável': partner.ownerName,
+                'E-mail': partner.email,
+                'WhatsApp': partner.whatsapp,
+                'Instagram': partner.instagram,
+                'Telefone': partner.phone,
+                'Endereço': `${partner.address || ''}, ${partner.city || ''} - ${partner.state || ''}`,
+                'Descrição': `<p class="whitespace-pre-line">${partner.description || ''}</p>`,
+            };
+
+            for(const [key, value] of Object.entries(fields)) {
+                if (value && !value.includes('undefined')) {
+                    detailsHTML += `
+                        <div class="py-3 grid grid-cols-3 gap-4">
+                            <dt class="text-sm font-medium text-gray-400">${key}</dt>
+                            <dd class="text-sm text-white col-span-2">${value}</dd>
+                        </div>
+                    `;
+                }
+            }
+            detailsHTML += '</dl>';
+            
+            modalBody.innerHTML = detailsHTML;
+            detailsModal.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
+

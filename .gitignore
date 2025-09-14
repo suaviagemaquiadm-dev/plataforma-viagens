@@ -1,0 +1,15 @@
+# Dependencies
+/node_modules
+/functions/node_modules
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Service account keys
+/functions/gemini-cli-98f4a-firebase-adminsdk-fbsvc-c5b450e1e3.json
+telegram-bot/gemini-cli-98f4a-firebase-adminsdk-fbsvc-c5b450e1e3.json
+
+# Other
+.DS_Store
+venv_filter_repo/
