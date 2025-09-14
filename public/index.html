@@ -108,22 +108,10 @@
                     <a href="#planos" class="text-gray-300 hover:text-white font-medium transition-colors">Planos</a>
                 </nav>
                 <div id="login-container" class="flex items-center space-x-4 invisible">
-                    <div id="logged-out-buttons" class="flex items-center space-x-4">
-                        <div class="relative">
-                            <button id="register-dropdown-btn" class="flex items-center btn-custom-orange px-4 py-2 rounded-lg font-bold transition-all">
-                                Cadastre-se
-                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
-                            </button>
-                            <div id="register-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-custom-card border border-custom rounded-lg shadow-lg py-1 z-20">
-                                <a href="/cadastro.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sou Anunciante</a>
-                                <a href="/cadastro-viajante-plus.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sou Viajante Plus</a>
-                                <a href="/cadastro-viajante.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sou Viajante (Free)</a>
-                            </div>
-                        </div>
-                        <a href="/pagina-login.html" class="flex items-center btn-custom-blue px-4 py-2 rounded-lg font-bold transition-all">
-                            Login
-                        </a>
-                    </div>
+                    <a href="/cadastro_anunciantes.html" class="mt-8 w-full block text-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</a>
+                    <a href="/pagina-login.html" class="flex items-center btn-custom-blue px-4 py-2 rounded-lg font-bold transition-all">
+                        Login
+                    </a>
                     <div id="logged-in-button"></div>
                 </div>
             </div>
@@ -360,7 +348,7 @@
                             <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Perfil Básico na plataforma</li>
                             <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 5 fotos na galeria</li>
                         </ul>
-                        <a href="/cadastro.html" class="mt-8 w-full block text-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</a>
+
                     </div>
                     <!-- Plano Plus -->
                     <div class="bg-gray-800 rounded-xl p-8 border-2 border-custom-orange relative flex flex-col card-hover">
@@ -372,7 +360,6 @@
                             <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Tudo do plano Basic</li>
                             <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Até 20 fotos e 1 vídeo</li>
                         </ul>
-                        <a href="/cadastro.html" class="mt-8 w-full block text-center btn-custom-orange font-bold py-3 rounded-lg transition">Assine Agora</a>
                     </div>
                     <!-- Plano Advance -->
                     <div class="bg-gray-800 rounded-xl p-8 border-2 border-custom flex flex-col card-hover">
@@ -385,7 +372,8 @@
                             <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Destaque na página principal</li>
                             <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>Relatórios de desempenho</li>
                         </ul>
-                        <a href="/cadastro.html" class="mt-8 w-full block text-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">Assine Agora</a>
+                        <a href="/cadastro_anunciantes.html" class="mt-8 w-full block text-center btn-custom-orange font-bold py-3 rounded-lg transition">Assine Já</a>
+
                     </div>
                 </div>
             </div>
@@ -877,6 +865,8 @@
             fetchWeather();
         });
     </script>
+    
+
 </body>
 </html>
 

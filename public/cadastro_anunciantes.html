@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Viagem Aqui - Cadastro de Anunciante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0D1117;
+            color: #E6EDF3; 
+        }
+        .bg-custom-card { background-color: #161B22; }
+        .border-custom { border-color: #30363D; }
+        .text-custom-orange { color: #FF3300; }
+        .btn-custom-orange { background-color: #FF3300; color: white; }
+        .btn-custom-orange:hover { background-color: #ff5533; }
+        .form-input {
+            background-color: #010409;
+            border: 1px solid #30363D;
+            color: #E6EDF3;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: border-color: 0.2s;
+        }
+        .form-input:focus { outline: none; border-color: #FF3300; }
+    </style>
+</head>
+<body class="bg-custom-dark">
+    <!-- Header -->
+    <header class="bg-custom-card/80 backdrop-blur-lg sticky top-0 z-50 border-b border-custom">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center group">
+                    <i class="fas fa-map-marker-alt text-custom-yellow text-3xl mr-3"></i>
+                    <span class="text-2xl font-bold text-white">Sua Viagem <span class="text-custom-orange">Aqui</span></span>
+                </a>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="/#como-funciona" class="text-gray-300 hover:text-white font-medium transition-colors">Como Funciona</a>
+                    <a href="/#planos" class="text-gray-300 hover:text-white font-medium transition-colors">Planos</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="py-20">
+            <div class="container mx-auto px-4">
+                <div class="max-w-2xl mx-auto bg-custom-card rounded-xl p-8 shadow-lg border border-custom">
+                    <h2 class="text-3xl font-bold text-white text-center mb-8">Cadastro de Anunciante</h2>
+                    <form id="cadastro-form">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label for="business-name" class="block text-gray-300 text-sm font-semibold mb-2">Nome do Estabelecimento</label>
+                                <input type="text" id="business-name" name="business-name" class="form-input" required>
+                            </div>
+                            <div>
+                                <label for="username" class="block text-gray-300 text-sm font-semibold mb-2">Nome de Usuário</label>
+                                <input type="text" id="username" name="username" class="form-input" required>
+                            </div>
+                            <div>
+                                <label for="category" class="block text-gray-300 text-sm font-semibold mb-2">Categoria de Negócio</label>
+                                <select id="category" name="category" class="form-input" required>
+                                    <option value="">Selecione uma categoria</option>
+                                    <option value="agencias">Agências de Viagens</option>
+                                    <option value="camping">Camping</option>
+                                    <option value="guias">Guias de Turismo</option>
+                                    <option value="hospedagem">Hotéis e Pousadas</option>
+                                    <option value="restaurantes">Restaurantes</option>
+                                    <option value="padarias">Padarias e Cafeterias</option>
+                                    <option value="delicatessen">Delicatessen e Empórios</option>
+                                    <option value="lanchonetes">Lanchonetes e Bares</option>
+                                    <option value="sorveterias">Sorveterias e Açaí</option>
+                                    <option value="conveniencia">Lojas de Conveniência</option>
+                                    <option value="farmacias">Farmácias</option>
+                                    <option value="artesanato">Lojas de Artesanato</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="cnpj" class="block text-gray-300 text-sm font-semibold mb-2">CNPJ</label>
+                                <input type="text" id="cnpj" name="cnpj" class="form-input" required>
+                            </div>
+                            <div>
+                                <label for="city-state" class="block text-gray-300 text-sm font-semibold mb-2">Cidade/Estado</label>
+                                <input type="text" id="city-state" name="city-state" class="form-input" required>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="email" class="block text-gray-300 text-sm font-semibold mb-2">Email</label>
+                                <input type="email" id="email" name="email" class="form-input" required>
+                            </div>
+                            <div>
+                                <label for="password" class="block text-gray-300 text-sm font-semibold mb-2">Senha</label>
+                                <input type="password" id="password" name="password" class="form-input" required>
+                            </div>
+                            <div>
+                                <label for="whatsapp" class="block text-gray-300 text-sm font-semibold mb-2">WhatsApp/Telegram (Opcional)</label>
+                                <input type="text" id="whatsapp" name="whatsapp" class="form-input">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="w-full btn-custom-orange font-bold py-3 rounded-lg transition">Assine Agora</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-custom-card border-t border-custom">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>&copy; 2025 Sua Viagem Aqui. Todos os direitos reservados.</p>
+                <p class="mt-1">A plataforma atua como intermediadora. A negociação é direta com o fornecedor.</p>
+            </div>
+        </div>
+    </footer>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAR3cjd3d4Bnzhv-iai20yeEVBSzu5k1Qo",
+            authDomain: "sua-viagem-aqui-v2.firebaseapp.com",
+            projectId: "sua-viagem-aqui-v2",
+            storageBucket: "sua-viagem-aqui-v2.appspot.com",
+            messagingSenderId: "508306740983",
+            appId: "1:508306740983:web:c1ce3824d51e098416a5f2",
+            measurementId: "G-FZKQ66PXFH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const form = document.getElementById('cadastro-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const businessName = document.getElementById('business-name').value;
+            const username = document.getElementById('username').value;
+            const category = document.getElementById('category').value;
+            const cnpj = document.getElementById('cnpj').value;
+            const cityState = document.getElementById('city-state').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+
+            try {
+                // Create user with email and password
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save additional user data to Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    businessName,
+                    username,
+                    category,
+                    cnpj,
+                    cityState,
+                    email,
+                    whatsapp,
+                    accountType: 'anunciante' // or get from a hidden field based on the plan
+                });
+
+                // Redirect to a success page or login
+                window.location.href = '/pagina-login.html'; 
+
+            } catch (error) {
+                console.error("Error signing up:", error);
+                alert("Erro ao cadastrar: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
