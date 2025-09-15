@@ -142,7 +142,53 @@ exports.applyGuidePromotion = onDocumentCreated("users/{userId}", async (event) 
             });
             console.log(`Promotion applied to guide ${userId}`);
         } catch (error) {
-            console.error("Error applying promotion:", error);
+            console.error("Erro ao aplicar promoção:", error);
         }
     }
+});
+
+exports.getPlatformMetrics = onCall({region: "southamerica-east1"}, async (request) => {
+    // Security check: Only allow admins to call this function
+    if (!request.auth || !(request.auth.token.email === "suaviagemaqui.adm@gmail.com" || request.auth.token.admin === true)) {
+        throw new functions.https.HttpsError('permission-denied', 'Você não tem permissão para acessar estas métricas.');
+    }
+
+    const metrics = {
+        totalUsers: 0,
+        travelersFree: 0,
+        travelersPlus: 0,
+        advertisers: 0,
+        guides: 0,
+        admins: 0,
+        activeAds: 0,
+        activeEvents: 0
+    };
+
+    // Get user counts
+    const usersSnapshot = await db.collection('users').get();
+    metrics.totalUsers = usersSnapshot.size;
+    usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.accountType === 'viajante-free') {
+            metrics.travelersFree++;
+        } else if (userData.accountType === 'viajante-plus') {
+            metrics.travelersPlus++;
+        } else if (userData.accountType === 'anunciante') {
+            metrics.advertisers++;
+        } else if (userData.category === 'guias') { // Guides are also advertisers, but we count them separately if they have 'guias' category
+            metrics.guides++;
+        } else if (userData.accountType === 'admin') {
+            metrics.admins++;
+        }
+    });
+
+    // Get active ads count
+    const partnersSnapshot = await db.collection('partners').where('status', '==', 'aprovado').get();
+    metrics.activeAds = partnersSnapshot.size;
+
+    // Get active events count (assuming an 'events' collection exists)
+    const eventsSnapshot = await db.collection('events').get(); // Assuming all events are active for now
+    metrics.activeEvents = eventsSnapshot.size;
+
+    return metrics;
 });

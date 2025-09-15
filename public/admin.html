@@ -63,6 +63,47 @@
         </header>
         
         <main class="container mx-auto p-4 md:p-8">
+            <h1 class="text-3xl font-bold text-white mb-8">Painel de Controle Geral</h1>
+
+            <!-- Secção de Visão Geral da Plataforma -->
+            <section id="platform-overview" class="mb-12">
+                <h2 class="text-2xl font-semibold text-white mb-4 border-b-2 border-custom pb-2">Visão Geral da Plataforma</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Total de Usuários</h3>
+                        <p id="total-users" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Viajantes Free</h3>
+                        <p id="travelers-free" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Viajantes Plus</h3>
+                        <p id="travelers-plus" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Anunciantes</h3>
+                        <p id="advertisers" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Guias</h3>
+                        <p id="guides" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Administradores</h3>
+                        <p id="admins" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Anúncios Ativos</h3>
+                        <p id="active-ads" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                    <div class="bg-custom-card p-6 rounded-lg border border-custom">
+                        <h3 class="text-lg font-semibold text-gray-400">Eventos Ativos</h3>
+                        <p id="active-events" class="text-3xl font-bold text-white mt-2">...</p>
+                    </div>
+                </div>
+            </section>
+
             <h1 class="text-3xl font-bold text-white mb-8">Gestão de Parceiros</h1>
 
             <!-- Secção de Parceiros Pendentes -->
@@ -220,7 +261,28 @@
                 if (isSuperAdmin || isAdminByRole || isAdminByEmail) {
                     loader.style.display = 'none';
                     pageContent.style.display = 'block';
-                    loadPartners();
+                    loadPartners(); // Existing function
+
+                    // New: Load platform metrics
+                    const getPlatformMetricsCallable = httpsCallable(functions, 'getPlatformMetrics');
+                    try {
+                        const result = await getPlatformMetricsCallable();
+                        const metrics = result.data;
+
+                        document.getElementById('total-users').textContent = metrics.totalUsers;
+                        document.getElementById('travelers-free').textContent = metrics.travelersFree;
+                        document.getElementById('travelers-plus').textContent = metrics.travelersPlus;
+                        document.getElementById('advertisers').textContent = metrics.advertisers;
+                        document.getElementById('guides').textContent = metrics.guides;
+                        document.getElementById('admins').textContent = metrics.admins;
+                        document.getElementById('active-ads').textContent = metrics.activeAds;
+                        document.getElementById('active-events').textContent = metrics.activeEvents;
+
+                    } catch (error) {
+                        console.error("Erro ao carregar métricas da plataforma:", error);
+                        // Optionally display an error message on the dashboard
+                    }
+
                 } else {
                     window.location.href = '/dashboard.html';
                 }
