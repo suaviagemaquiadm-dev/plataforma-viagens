@@ -192,3 +192,121 @@ exports.getPlatformMetrics = onCall({region: "southamerica-east1"}, async (reque
 
     return metrics;
 });
+
+exports.getAllUsers = onCall({region: "southamerica-east1"}, async (request) => {
+    // Security check: Only allow admins to call this function
+    if (!request.auth || !(request.auth.token.email === "suaviagemaqui.adm@gmail.com" || request.auth.token.admin === true)) {
+        throw new functions.https.HttpsError('permission-denied', 'Você não tem permissão para acessar esta lista de usuários.');
+    }
+
+    try {
+        const usersSnapshot = await db.collection('users').get();
+        const users = [];
+        usersSnapshot.forEach(doc => {
+            users.push({ id: doc.id, ...doc.data() });
+        });
+        return { users };
+    } catch (error) {
+        console.error("Erro ao buscar usuários:", error);
+        throw new functions.https.HttpsError('internal', 'Erro ao buscar usuários.');
+    }
+});
+
+exports.updateUserRoleAndPlan = onCall({region: "southamerica-east1"}, async (request) => {
+    // Security check: Only allow admins to call this function
+    if (!request.auth || !(request.auth.token.email === "suaviagemaqui.adm@gmail.com" || request.auth.token.admin === true)) {
+        throw new functions.https.HttpsError('permission-denied', 'Você não tem permissão para atualizar usuários.');
+    }
+
+    const { userId, accountType, plan } = request.data;
+
+    if (!userId || !accountType || !plan) {
+        throw new functions.https.HttpsError('invalid-argument', 'Dados incompletos para atualização do usuário.');
+    }
+
+    try {
+        const userRef = db.collection('users').doc(userId);
+        await userRef.update({
+            accountType: accountType,
+            plan: plan
+        });
+        return { success: true, message: 'Usuário atualizado com sucesso.' };
+    } catch (error) {
+        console.error("Erro ao atualizar usuário:", error);
+        throw new functions.https.HttpsError('internal', 'Erro ao atualizar usuário.');
+    }
+});
+
+exports.deleteUser = onCall({region: "southamerica-east1"}, async (request) => {
+    // Security check: Only allow admins to call this function
+    if (!request.auth || !(request.auth.token.email === "suaviagemaqui.adm@gmail.com" || request.auth.token.admin === true)) {
+        throw new functions.https.HttpsError('permission-denied', 'Você não tem permissão para excluir usuários.');
+    }
+
+    const { userId } = request.data;
+
+    if (!userId) {
+        throw new functions.https.HttpsError('invalid-argument', 'ID do usuário é necessário para exclusão.');
+    }
+
+    try {
+        // Delete user document from Firestore
+        await db.collection('users').doc(userId).delete();
+        
+        // TODO: Implement Firebase Authentication user deletion here if needed
+        // const adminAuth = require('firebase-admin/auth');
+        // await adminAuth.getAuth().deleteUser(userId);
+
+        return { success: true, message: 'Usuário excluído com sucesso.' };
+    } catch (error) {
+        console.error("Erro ao excluir usuário:", error);
+        throw new functions.https.HttpsError('internal', 'Erro ao excluir usuário.');
+    }
+});
+
+exports.createAd = onCall({region: "southamerica-east1"}, async (request) => {
+    // Security check: Only allow admins to call this function
+    if (!request.auth || !(request.auth.token.email === "suaviagemaqui.adm@gmail.com" || request.auth.token.admin === true)) {
+        throw new functions.https.HttpsError('permission-denied', 'Você não tem permissão para criar anúncios.');
+    }
+
+    const { businessName, category, description, whatsapp, telegram, website, city, state, imageUrls, advertiserUid } = request.data;
+
+    if (!businessName || !category || !description || !city || !state || !advertiserUid) {
+        throw new functions.https.HttpsError('invalid-argument', 'Dados incompletos para criação do anúncio.');
+    }
+
+    // Generate unique partnerId
+    let partnerId;
+    let isUnique = false;
+    while (!isUnique) {
+        const randomId = Math.floor(100000 + Math.random() * 900000).toString();
+        const snapshot = await db.collection('partners').where('partnerId', '==', randomId).get();
+        if (snapshot.empty) {
+            partnerId = randomId;
+            isUnique = true;
+        }
+    }
+
+    try {
+        await db.collection('partners').add({
+            businessName,
+            category,
+            description,
+            whatsapp: whatsapp || null,
+            telegram: telegram || null,
+            website: website || null,
+            city,
+            state,
+            imageUrls: imageUrls || [],
+            advertiserUid, // Link to the advertiser who owns this ad
+            partnerId,
+            status: 'aprovado', // Admin-created ads are approved by default
+            createdAt: FieldValue.serverTimestamp()
+        });
+        return { success: true, message: 'Anúncio criado com sucesso!' };
+    } catch (error) {
+        console.error("Erro ao criar anúncio:", error);
+        throw new functions.https.HttpsError('internal', 'Erro ao criar anúncio.');
+    }
+});
